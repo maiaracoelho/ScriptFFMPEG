@@ -1,0 +1,1 @@
+/var/www/videos_originais/Sintel/ sintelA sintel_audio.mp4 /dados/www/datasets/dataset6/videos_versionados/ 100 

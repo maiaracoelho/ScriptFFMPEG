@@ -1,0 +1,10 @@
+/var/www/videos_originais/Sintel/ sintelV sintel_video.mp4 /dados/www/dataset4/ 
+500 680 430
+740 680 430
+980 680 430
+1220 680 430
+1460 680 430
+1700 680 430
+1940 680 430
+2180 680 430
+2420 680 430 
