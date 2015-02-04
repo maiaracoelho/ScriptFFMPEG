@@ -1,3 +1,4 @@
 /home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos1/dash_capturas_tshark/tshark_dashdataset_26-01-15 
+/home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos1/dash_logbw/logbw_dashdataset_26-01-15 
 600 840 1080 1320
 600 720 840 960 1080 1200 
