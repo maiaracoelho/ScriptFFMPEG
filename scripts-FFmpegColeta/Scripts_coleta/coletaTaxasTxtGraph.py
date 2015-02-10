@@ -18,7 +18,9 @@ path, logbw,  idExecucao = linha.split()
 path_logsbw = str(path) + "/dash_logs_bw"
 path_logsbw_txt = str(path) + "/txt_logbw"
 path_video_txt = str(path) + "/txt_video"
-path_graphs = str(path) + "/graphs"
+path_buffer_txt = str(path) + "/txt_buffer"
+path_graphs_tx = str(path) + "/graphs_tx"
+path_graphs_buffer = str(path) + "/graphs_buffer"
 arq.close()
 
 #listar todos os arquivos destes diretorios e colocar em listas
@@ -27,6 +29,20 @@ txtLogsBwFiles = os.listdir(path_logsbw_txt)
 
 gplot = Gnuplot.Gnuplot(debug = 1)
 
+for txtLogsBwFile in txtLogsBwFiles:
+    txtLogsBfFilewithPath = path_buffer_txt + "/" + txtLogsBwFile
+    print txtLogsBfFilewithPath
+    title = txtLogsBwFile.split(".")
+    title = title[0]
+    gplot.title("'"+title+"'")
+    gplot.xlabel('Tempo (s)')
+    gplot.ylabel('Ocupação do Buffer (ms)')
+    gplot('set xtics 90')
+    gplot('set xrange [0:900]')
+    gplot('set t png')
+    gplot('set o "'+path_graphs_buffer+'/'+title+'.png"')
+    gplot.plot("'"+txtLogsBfFilewithPath+"' u 1:2 w lines t 'Ocupação do Buffer (s)'")
+    
 for txtLogsBwFile in txtLogsBwFiles:
     txtLogsBwFilewithPath = path_logsbw_txt + "/" + txtLogsBwFile
     txtLogsBrFilewithPath = path_video_txt + "/" + txtLogsBwFile
@@ -42,9 +58,10 @@ for txtLogsBwFile in txtLogsBwFiles:
     gplot('set xrange [0:900]')
     gplot('set yrange [0:5000]')
     gplot('set t png')
-    gplot('set o "'+path_graphs+'/'+title+'.png"')
+    gplot('set o "'+path_graphs_tx+'/'+title+'.png"')
     gplot.plot("'"+txtLogsBwFilewithPath+"' u 1:2 w steps t 'Largura de Banda (kbps)', '"+txtLogsBrFilewithPath+"'u 1:2 w p t 'Taxa de bits (kbps)'")
-   
+    
+
 
 '''system('set ytics ( 200000, 1600000, 2200000, 2800000, 3400000, 4000000, 5000000)')
 system('set xtics 90')

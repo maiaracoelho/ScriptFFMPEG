@@ -86,9 +86,12 @@ arqLogsBw.close()
 arqLogsBrTxt = open(path_video_txt + "/" + nameLogs , 'w')
 
 #Tratar tempo para o throughput1 
+# ate log 9 a diferenca e de 4 hrs de log10 a 26 a diferenca e de 4 hs e 34 segs  para este experimento
 for through in throughs1:
     timeInitialThrough1 = datetime.strptime(through[3], '%Y-%m-%dT%H:%M:%S.%fZ')
-    timeInitialThrough1 = timeInitialThrough1 + timedelta(hours=-4)
+    timeInitialThrough1 = timeInitialThrough1 + timedelta(hours=-4) 
+    #timeInitialThrough1 = timeInitialThrough1 + timedelta(seconds=+34) 
+
     if (timeInitialThrough1 > initialTimeTotalLogBw):
         timeInitialThrough1 =  timeInitialThrough1 - initialTimeTotalLogBw
         timeInitialThrough1 =  timeInitialThrough1.total_seconds()
@@ -108,6 +111,8 @@ arqLogsBfTxt = open(path_buffer_txt + "/" + nameLogs , 'w')
 for buffer in buffers1:
     timeInitialBuffer1 = datetime.strptime(buffer[1], '%Y-%m-%dT%H:%M:%S.%fZ')
     timeInitialBuffer1 = timeInitialBuffer1 + timedelta(hours=-4)
+    #timeInitialBuffer1 = timeInitialBuffer1 + timedelta(seconds=+34) 
+
     if (timeInitialBuffer1 > initialTimeTotalLogBw):
         timeInitialBuffer1 =  timeInitialBuffer1 - initialTimeTotalLogBw
         timeInitialBuffer1 =  timeInitialBuffer1.total_seconds()
