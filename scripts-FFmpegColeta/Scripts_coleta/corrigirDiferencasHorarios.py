@@ -24,8 +24,8 @@ except:
     print "Error DB Selection"
 
 
-#Recuperar todos os experimento que possuem o atributo algorithm = RAR ou RMR
-cursor.execute ('SELECT * FROM dash_execution WHERE algorithm = "RAR" OR algorithm = "RMR"' )
+#Recuperar todos os experimento que possuem o atributo algorithm = RAR ou RMR ou ainda MILLER
+cursor.execute ('SELECT * FROM dash_execution WHERE algorithm = "MILLER" OR algorithm = "RMR" OR algorithm = "MILLER"' )
 executions = cursor.fetchall()
 
 '''
@@ -41,7 +41,7 @@ print "ExecutionId: %d - time %s - new time: %s"%(executions[0][0], executions[0
 
 for execution in executions:
     timeExecution = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
-    timeExecution = timeExecution + timedelta(seconds=+34) 
+    timeExecution = timeExecution + timedelta(seconds=-30) 
     timeExecution = timeExecution.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     print "ExecutionId: %d - time %s - new time: %s"%(execution[0], execution[1], timeExecution)
     cursor.execute ('UPDATE dash_execution SET execution_time = "%s" WHERE id = %d' %(str(timeExecution), int(execution[0])))
@@ -56,10 +56,10 @@ for execution in executions:
         timeResponseThrough = datetime.strptime(through[4], '%Y-%m-%dT%H:%M:%S.%fZ')
         timeFinishThrough = datetime.strptime(through[5], '%Y-%m-%dT%H:%M:%S.%fZ')
 
-        timeThrough = timeThrough + timedelta(seconds=+34) 
-        timeStartThrough = timeStartThrough + timedelta(seconds=+34) 
-        timeResponseThrough = timeResponseThrough + timedelta(seconds=+34) 
-        timeFinishThrough = timeFinishThrough + timedelta(seconds=+34) 
+        timeThrough = timeThrough + timedelta(seconds=-30) 
+        timeStartThrough = timeStartThrough + timedelta(seconds=-30) 
+        timeResponseThrough = timeResponseThrough + timedelta(seconds=-30) 
+        timeFinishThrough = timeFinishThrough + timedelta(seconds=-30) 
     
         timeThrough = timeThrough.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         timeStartThrough = timeStartThrough.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
@@ -74,7 +74,7 @@ for execution in executions:
     buffers = cursor.fetchall()
     for buffer in buffers:
         timeBuffer = datetime.strptime(buffer[1], '%Y-%m-%dT%H:%M:%S.%fZ')
-        timeBuffer = timeBuffer + timedelta(seconds=+34) 
+        timeBuffer = timeBuffer + timedelta(seconds=-30) 
         timeBuffer = timeBuffer.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
         cursor.execute ('UPDATE dash_bufferlevel SET time = "%s" WHERE id = %d' %(str(timeBuffer), int(buffer[0])))

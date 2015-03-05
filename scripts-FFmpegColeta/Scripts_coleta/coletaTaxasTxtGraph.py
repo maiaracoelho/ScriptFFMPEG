@@ -36,9 +36,12 @@ for txtLogsBwFile in txtLogsBwFiles:
     title = title[0]
     gplot.title("'"+title+"'")
     gplot.xlabel('Tempo (s)')
-    gplot.ylabel('Ocupação do Buffer (ms)')
+    gplot.ylabel('Ocupação do Buffer (s)')
     gplot('set xtics 90')
+    gplot('set ytics (5, 8, 12, 25, 50, 100, 125)')
+    gplot('set grid ytics')
     gplot('set xrange [0:900]')
+    gplot('set yrange [0:130]')
     gplot('set t png')
     gplot('set o "'+path_graphs_buffer+'/'+title+'.png"')
     gplot.plot("'"+txtLogsBfFilewithPath+"' u 1:2 w lines t 'Ocupação do Buffer (s)'")
@@ -59,7 +62,7 @@ for txtLogsBwFile in txtLogsBwFiles:
     gplot('set yrange [0:5000]')
     gplot('set t png')
     gplot('set o "'+path_graphs_tx+'/'+title+'.png"')
-    gplot.plot("'"+txtLogsBwFilewithPath+"' u 1:2 w steps t 'Largura de Banda (kbps)', '"+txtLogsBrFilewithPath+"'u 1:2 w p t 'Taxa de bits (kbps)'")
+    gplot.plot("'"+txtLogsBwFilewithPath+"' u 1:2 w steps t 'Largura de Banda (kbps)', '"+txtLogsBrFilewithPath+"'u 1:2 w lp t 'Taxa de bits (kbps)'")
     
 
 
