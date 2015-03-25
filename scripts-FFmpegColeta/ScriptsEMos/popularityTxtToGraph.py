@@ -33,7 +33,7 @@ for txtLogsPopFile in txtLogsPopFiles:
     gplot.title("'Popularidade das Taxas'")
     gplot.ylabel('Popularidade (%)')
     gplot.xlabel('Taxa de bits (bps)')
-    gplot('set ytics 10')
+    gplot('set ytics 5')
     gplot('set grid')
     gplot('set t png')
     gplot('set style fill pattern')
