@@ -1,1 +1,1 @@
-/home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos-06-03-15 logbw6_miller_cenario3_gran160_fps30.txt 1 
+/home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos-06-03-15 logbw6_miller_cenario3_gran160_fps30.txt 63 

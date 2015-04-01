@@ -35,7 +35,7 @@ path_logsrebuffers_txt = str(path) + "/txt_logsrebuffers"
 arq.close()
 
 #Limiar minimo do buffer
-BMin = 10
+BMin = 0.5
 #Recuperar todos os executions
 cursor.execute ('SELECT * FROM dash_execution')
 executions = cursor.fetchall()
@@ -96,7 +96,10 @@ for execution in executions:
         for duration in durations_list:
             duration_sum_audio += duration[2]
         
-        average_duration_rebuffer_audio = duration_sum_audio/len(durations_list)
+        if(len(durations_list) != 0):
+            average_duration_rebuffer_audio = duration_sum_audio/len(durations_list)
+        else:
+            average_duration_rebuffer_audio = 0
             
         print "Rebufferizacoes Audio: %d"%rebuffer_audio_count
         print "RebufferAudioFrequency: %f"%tx_bufferAudio_freq
@@ -208,9 +211,13 @@ for execution in executions:
         #Media das duracoes das rebufferizacoes de video
         duration_sum_video = 0
         for duration in durationsvideo_list:
-            duration_sum_video += duration[2]
+            duration_sum_video += duration[2]        
         
-        average_duration_rebuffer_video = duration_sum_video/len(durationsvideo_list)
+        if(len(durationsvideo_list) != 0):
+            average_duration_rebuffer_video = duration_sum_video/len(durationsvideo_list)
+        else:
+            average_duration_rebuffer_video = 0
+
         
         print "Rebufferizacoes Video: %d"%rebuffer_video_count
         print "RebufferVideoFrequency: %f"%tx_bufferVideo_freq

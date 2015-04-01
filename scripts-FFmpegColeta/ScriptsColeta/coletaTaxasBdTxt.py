@@ -119,7 +119,7 @@ for buffer in buffers1:
         level = buffer[2]
 
         arqLogsBfTxt.write(str(timeInitialBuffer1) + " " +  str(level) + "\n")   
-        #print timeInitialBuffer1, level
+        print timeInitialBuffer1, level
         
 arqLogsBfTxt.close()
 
