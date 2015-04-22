@@ -9,7 +9,6 @@ import MySQLdb
 import string
 from datetime import datetime, timedelta
 import math
-import csv
 from operator import itemgetter
 
  
@@ -36,6 +35,8 @@ arq.close()
 #Limiar minimo do buffer
 BMin = 10
 Breb = 0
+avaliationTime = 720
+
 #Recuperar todos os executions
 cursor.execute ('SELECT * FROM dash_execution where id = %d' % int(idExecucao))
 execution = cursor.fetchone()
@@ -46,7 +47,7 @@ execution = cursor.fetchone()
 #if execution[4] == "video":
 #        id_execution = execution[0]
 #        mpd_peaces = execution[3].split("/")
-inicialTimeSession = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
+#inicialTimeSession = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
         #Pega a metrica FR
 #        fr_parameter = mpd_peaces[5]
 print "------>ExecutionId: %s"%str(idExecucao)
@@ -55,8 +56,12 @@ print "------>ExecutionId: %s"%str(idExecucao)
 #Recuperar todos os niveis de buffer relacionados a execucao
 cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(idExecucao))
 buffersVideo = cursor.fetchall()
-           
+
+inicialTimeSession = datetime.strptime(buffersVideo[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
+          
 listaBuffer = buffersVideo[::-1]
+
+
 listaProbabilityTxt = []
 probability = []
 probabilidade_sum = 0
@@ -73,7 +78,7 @@ for i in  range(len(listaBuffer)):
     countSmaller = 0
     countReb = 0
             
-    if deltaTime2 >= 0 and deltaTime1 >= 15 and deltaTime1 <= 900:
+    if deltaTime2 >= 0 and deltaTime1 >= 15 and deltaTime1 <= avaliationTime:
         internalIndice = i
         print "delta2: "+str(deltaTime2) +" delta1: "+ str(deltaTime1)
                 
@@ -105,7 +110,9 @@ print "Media de Probabilidade: " + str(averageProb)
 arqLogsProbabilityTxt = open(path_logsprob_txt + "/log_probability_exec"+str(idExecucao)+".txt" , 'w')
 for prob in  reversed(listaProbabilityTxt):
     #print prob
-    arqLogsProbabilityTxt.write(str(prob[0]) + " " + str(prob[1]*100) + "\n")   
+    arqLogsProbabilityTxt.write(str(prob[0]) + " " + str(prob[1]*100) + "\n") 
+    
+arqLogsProbabilityTxt.close()  
         
             
                 

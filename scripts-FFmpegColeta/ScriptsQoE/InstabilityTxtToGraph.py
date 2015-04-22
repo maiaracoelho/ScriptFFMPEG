@@ -30,11 +30,11 @@ for txtLogsInstFile in txtLogsInstFiles:
     print txtLogsInstFilewithPath
     title = txtLogsInstFile.split(".")
     title = title[0]
-    gplot.title("'Instabilidade'")
+    gplot.title(title)
     gplot.ylabel('Instabilidade')
     gplot.xlabel('Tempo (s)')
     gplot('set yrange [0:2]')
-    gplot('set xrange [0:900]')
+    gplot('set xrange [0:720]')
     gplot('set xtics 50')
     gplot('set ytics 0.25')
     gplot('set grid ytics')

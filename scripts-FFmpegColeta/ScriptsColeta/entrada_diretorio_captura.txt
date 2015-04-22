@@ -1,1 +1,1 @@
-/home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos-06-03-15 logbw31_atc_cenario8_3instancias_gran80_backoff_fps30.txt 63 
+/home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos-06-03-15 logbw42_atc_cenario9_3instancias_gran400_backoff_fps30.txt 141 

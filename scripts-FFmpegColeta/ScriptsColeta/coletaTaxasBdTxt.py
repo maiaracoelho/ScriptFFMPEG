@@ -34,7 +34,7 @@ path_video_txt = str(path) + "/txt_video"
 path_buffer_txt = str(path) + "/txt_buffer"
 
 nameLogs = str(logbw).split("_")
-nameLogs = nameLogs[0] + ".txt"
+nameLogs = nameLogs[0]+ "_exec" + str(idExecucao) + ".txt"
 arq.close()
 
 '''#Recuperar o experimento que possui o time igual ao do expeimento anterior - Isso eh pq video e audio sao separados

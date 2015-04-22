@@ -36,82 +36,21 @@ arq.close()
 
 #Limiar minimo do buffer
 BMin = 0.5
+avaliationTime = 720
 #Recuperar todos os executions
 cursor.execute ('SELECT * FROM dash_execution')
 executions = cursor.fetchall()
 
 #Lista todas as execucoes
 for execution in executions:
-    #Verifica se eh audio
-     if execution[4] == "audio":
-        id_execution = execution[0]
-        print "----->ExecutionId: %d"%id_execution 
-       
-        #Recuperar todos os buffers relacionados a execucao
-        cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(id_execution))
-        buffersAudio = cursor.fetchall()
-        
-        rebuffer_audio_count = 0
-        rebufferaudio_flag = True
-        bufferlevel_last = int(buffersAudio[0][2])
-        durations_list = []
-        durationsaudio = []
-        
-        #Lista todos os buffers de audio para verificar as ocorrencias de rebufferizacao
-        for i in range(len(buffersAudio)):
-            bufferlevel = float(buffersAudio[i][2])
-            time = datetime.strptime(buffersAudio[i][1], '%Y-%m-%dT%H:%M:%S.%fZ')
-            
-            # Verifica se o nivel do buffer esta abaixo do limiar inferior
-            # Verifica tb se o nivel do buffer atual eh menor do que o passado
-            # Se for, verifica se o flag esta em verdadeiro
-            # Se estiver que dizer que o buffer esta esvaziando e acontecera a rebufferizacao
-            # Pega o tempo inicial time1
-            
-            if bufferlevel < BMin and bufferlevel < bufferlevel_last: 
-                if(rebufferaudio_flag == True):
-                    time1 = time
-                    rebufferaudio_flag = False
-            # Verifica se o nivel atual do buffer eh maior do que o passado 
-            # Se for, verifica se a flag esta em false
-            # Se estiver eh sinal de que a rebufferizacao esta ocorrendo
-            # Pega o tempo final time2
-           
-            elif bufferlevel > bufferlevel_last:
-                if(rebufferaudio_flag == False):
-                    time2 = time
-                    rebuffer_audio_count += 1
-                    rebufferaudio_flag = True
-                    deltaTime = time2 - time1
-                    deltaTime = deltaTime.total_seconds()
-                    durationsaudio = [time1.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), time2.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), deltaTime]
-                    durations_list.append(durationsaudio)
-                    
-            
-            bufferlevel_last = bufferlevel  
-        
-        tx_bufferAudio_freq = len(durations_list)/868.8
-        #Media das duracoes das rebufferizacoes de audio
-        duration_sum_audio = 0
-        for duration in durations_list:
-            duration_sum_audio += duration[2]
-        
-        if(len(durations_list) != 0):
-            average_duration_rebuffer_audio = duration_sum_audio/len(durations_list)
-        else:
-            average_duration_rebuffer_audio = 0
-            
-        print "Rebufferizacoes Audio: %d"%rebuffer_audio_count
-        print "RebufferAudioFrequency: %f"%tx_bufferAudio_freq
-        print "RebufferAudioAverageDuration: %f"%average_duration_rebuffer_audio
     
      # Verifica se a execucao eh de video
      # Se for, lista tanto os throughputs, quanto os niveis de buffer
      
-     elif execution[4] == "video":
+     if execution[4] == "video":
         id_execution = execution[0]
         mpd_peaces = execution[3].split("/")
-        inicialTimeSession = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
+        #inicialTimeSession = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
         #Pega a metrica FR
         fr_parameter = mpd_peaces[5]
         print "------>ExecutionId: %d"%id_execution 
@@ -119,6 +58,7 @@ for execution in executions:
         #Recuperar todos os throughputs relacionados a execucao
         cursor.execute ('SELECT id, time, quality, bandwidth FROM dash_throughseg WHERE fk_execution = %d' %int(id_execution))
         throughs1 = cursor.fetchall()
+        inicialTimeSession = datetime.strptime(throughs1[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
 
         #Recuperar todos os niveis de buffer relacionados a execucao
         cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(id_execution))
@@ -197,17 +137,18 @@ for execution in executions:
                     deltaTime = time2 - time1
                     deltaTime = deltaTime.total_seconds()
                     
-                    durationsvideo = [deltaTime1, deltaTime2, deltaTime]
-                    arqLogsRebufferTxt.write(str(deltaTime1) + " " + str(deltaTime) + "\n")   
-                    arqLogsRebufferTxt.write(str(deltaTime2) + " " + str(deltaTime) + "\n")                      
-                    durationsvideo_list.append(durationsvideo)
+                    if deltaTime <= avaliationTime:
+                        durationsvideo = [deltaTime1, deltaTime2, deltaTime]
+                        arqLogsRebufferTxt.write(str(deltaTime1) + " " + str(deltaTime) + "\n")   
+                        arqLogsRebufferTxt.write(str(deltaTime2) + " " + str(deltaTime) + "\n")                      
+                        durationsvideo_list.append(durationsvideo)
             
             bufferlevelvideo_last = bufferlevelvideo  
         
         arqLogsRebufferTxt.close()
         
 
-        tx_bufferVideo_freq = len(durationsvideo_list)/868.8
+        tx_bufferVideo_freq = len(durationsvideo_list)/float(avaliationTime)
         #Media das duracoes das rebufferizacoes de video
         duration_sum_video = 0
         for duration in durationsvideo_list:

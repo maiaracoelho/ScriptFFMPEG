@@ -30,7 +30,7 @@ for txtLogsPopFile in txtLogsPopFiles:
     print txtLogsPopFilewithPath
     title = txtLogsPopFile.split(".")
     title = title[0]
-    gplot.title("'Popularidade das Taxas'")
+    gplot.title(title)
     gplot.ylabel('Popularidade (%)')
     gplot.xlabel('Taxa de bits (bps)')
     gplot('set ytics 5')
