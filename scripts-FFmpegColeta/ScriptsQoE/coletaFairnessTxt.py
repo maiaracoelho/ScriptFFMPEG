@@ -68,7 +68,7 @@ for execution in executions:
             if deltaTime <= avaliationTime:
                 
                 bitsSeg = int(throughs[i][6]) * 8
-                bitsSeg /= 1000
+                bitsSeg /= 1000 #kb
                 bitsSum  += bitsSeg
                 throughCount += 1
                 
@@ -94,7 +94,7 @@ print "xiCount: "+ str(xiCount)
 print "Justica: "+ str(fairness)
 
 #Criar o arquivo txt para gravar o algoritmo e sua justica
-arqLogsFairnessTxt = open(path_logsfairness_txt + "/log_fairness_"+alg+"ex"+str(idExecucao1)+"-"+str(idExecucao2)+"-"+str(idExecucao3)+".txt" , 'w')   
+arqLogsFairnessTxt = open(path_logsfairness_txt + "/log_fairness_"+alg+"_ex"+str(idExecucao1)+"-"+str(idExecucao2)+"-"+str(idExecucao3)+".txt" , 'w')   
 arqLogsFairnessTxt.write(str(alg) + " " + str(fairness) + "\n")   
 arqLogsFairnessTxt.close()
 
