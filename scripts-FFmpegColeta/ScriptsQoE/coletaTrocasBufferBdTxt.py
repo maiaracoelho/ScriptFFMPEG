@@ -29,7 +29,7 @@ except:
 #Obter o diretorio onde os arquivos txt serao gerados 
 arq = open("entrada_diretorio_captura.txt","r")
 linha = arq.readline()
-path, logbw,  idExecucao = linha.split()
+path, idExecucao, idExecucao2, idExecucao3, alg = linha.split()
 path_logswitchs_txt = str(path) + "/txt_logspopularity"
 path_logsrebuffers_txt = str(path) + "/txt_logsrebuffers"
 arq.close()

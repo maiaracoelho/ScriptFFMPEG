@@ -28,7 +28,7 @@ except:
 #Obter o diretorio onde os arquivos txt serao gerados 
 arq = open("entrada_diretorio_captura.txt","r")
 linha = arq.readline()
-path, logbw,  idExecucao = linha.split()
+path, idExecucao1, idExecucao2, idExecucao3, alg = linha.split()
 path_logsprob_txt = str(path) + "/txt_logsprobability"
 arq.close()
 
@@ -38,7 +38,7 @@ Breb = 0
 avaliationTime = 720
 
 #Recuperar todos os executions
-cursor.execute ('SELECT * FROM dash_execution where id = %d' % int(idExecucao))
+cursor.execute ('SELECT * FROM dash_execution where id = %d' % int(idExecucao1))
 execution = cursor.fetchone()
 
 # Verifica se a execucao eh de video
@@ -50,11 +50,11 @@ execution = cursor.fetchone()
 #inicialTimeSession = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
         #Pega a metrica FR
 #        fr_parameter = mpd_peaces[5]
-print "------>ExecutionId: %s"%str(idExecucao)
+print "------>ExecutionId: %s"%str(idExecucao1)
 #        print "FRparameter: %s"%fr_parameter # Pegar FR
 
 #Recuperar todos os niveis de buffer relacionados a execucao
-cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(idExecucao))
+cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(idExecucao1))
 buffersVideo = cursor.fetchall()
 
 inicialTimeSession = datetime.strptime(buffersVideo[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -107,7 +107,7 @@ averageProb = probabilidade_sum/len(listaProbabilityTxt)
 print "Media de Probabilidade: " + str(averageProb)
         
 #Criar o arquivo txt para gravar os tempos de inicio, fim e duracao das rebufferizacoes
-arqLogsProbabilityTxt = open(path_logsprob_txt + "/log_probability_exec"+str(idExecucao)+".txt" , 'w')
+arqLogsProbabilityTxt = open(path_logsprob_txt + "/log_probability_exec"+str(idExecucao1)+".txt" , 'w')
 for prob in  reversed(listaProbabilityTxt):
     #print prob
     arqLogsProbabilityTxt.write(str(prob[0]) + " " + str(prob[1]*100) + "\n") 
