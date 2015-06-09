@@ -15,14 +15,14 @@ from operator import itemgetter
  
 #Conectar ao banco
 try:
-    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db')
+    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db_fase1')
 except:
     print "Error Connection"
 
 cursor = connection.cursor()
   
 try:
-    connection.select_db("dash_db")
+    connection.select_db("dash_db_fase1")
 except:
     print "Error DB Selection"
 
@@ -36,7 +36,7 @@ arq.close()
 
 #Limiar minimo do buffer
 BMin = 0.5
-avaliationTime = 720
+avaliationTime = 720.0
 #Recuperar todos os executions
 cursor.execute ('SELECT * FROM dash_execution')
 executions = cursor.fetchall()
@@ -56,12 +56,12 @@ for execution in executions:
         print "------>ExecutionId: %d"%id_execution 
         print "FRparameter: %s"%fr_parameter # Pegar FR
         #Recuperar todos os throughputs relacionados a execucao
-        cursor.execute ('SELECT id, time, quality, bandwidth FROM dash_throughseg WHERE fk_execution = %d' %int(execution))
+        cursor.execute ('SELECT id, time, quality, bandwidth FROM dash_throughseg WHERE fk_execution = %d' %int(id_execution))
         throughs1 = cursor.fetchall()
         inicialTimeSession = datetime.strptime(throughs1[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
 
         #Recuperar todos os niveis de buffer relacionados a execucao
-        cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(execution))
+        cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(id_execution))
         buffersVideo = cursor.fetchall()
         
         switch_count = 0
@@ -109,64 +109,4 @@ for execution in executions:
             w = csv.writer(arqLogsSwTxt, delimiter=' ')
             w.writerows(dict_bitrates_sorted)
         arqLogsSwTxt.close()
-        
-        #calcular rebufferizacoes
-        rebuffer_video_count = 0
-        rebuffervideo_flag = True
-        bufferlevelvideo_last = int(buffersVideo[0][2])
-        durationsvideo_list = []
-        durationsvideo = []
-        
-        #Criar o arquivo txt para gravar os tempos de inicio, fim e duracao das rebufferizacoes
-        arqLogsRebufferTxt = open(path_logsrebuffers_txt + "/log_rebuffers_exec"+str(id_execution)+".txt" , 'w')
-        
-        for i in range(len(buffersVideo)):
-            bufferlevelvideo = float(buffersVideo[i][2])
-            time = datetime.strptime(buffersVideo[i][1], '%Y-%m-%dT%H:%M:%S.%fZ')
-                             
-            if bufferlevelvideo < BMin and bufferlevelvideo < bufferlevelvideo_last: 
-                if rebuffervideo_flag == True:
-                    time1 = time
-                    deltaTime1 =  time1 - inicialTimeSession
-                    deltaTime1 = deltaTime1.total_seconds()
-                    rebuffervideo_flag = False
-            elif bufferlevelvideo > bufferlevelvideo_last:
-                if rebuffervideo_flag == False:
-                    time2 = time
-                    deltaTime2 =  time2 - inicialTimeSession
-                    deltaTime2 = deltaTime2.total_seconds()
-                    
-                    rebuffer_video_count += 1
-                    rebuffervideo_flag = True
-                    
-                    deltaTime = time2 - time1
-                    deltaTime = deltaTime.total_seconds()
-                    
-                    if deltaTime <= avaliationTime:
-                        durationsvideo = [deltaTime1, deltaTime2, deltaTime]
-                        arqLogsRebufferTxt.write(str(deltaTime1) + " " + str(deltaTime) + "\n")   
-                        arqLogsRebufferTxt.write(str(deltaTime2) + " " + str(deltaTime) + "\n")                      
-                        durationsvideo_list.append(durationsvideo)
-            
-            bufferlevelvideo_last = bufferlevelvideo  
-        
-        arqLogsRebufferTxt.close()
-        
-
-        tx_bufferVideo_freq = len(durationsvideo_list)/float(avaliationTime)
-        #Media das duracoes das rebufferizacoes de video
-        duration_sum_video = 0
-        for duration in durationsvideo_list:
-            duration_sum_video += duration[2]        
-        
-        if(len(durationsvideo_list) != 0):
-            average_duration_rebuffer_video = duration_sum_video/len(durationsvideo_list)
-        else:
-            average_duration_rebuffer_video = 0
-
-        
-        print "Rebufferizacoes Video: %d"%rebuffer_video_count
-        print "RebufferVideoFrequency: %f"%tx_bufferVideo_freq
-        print "RebufferAudioAverageDuration: %f"%average_duration_rebuffer_video
-
 

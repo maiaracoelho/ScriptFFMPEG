@@ -34,7 +34,7 @@ arq.close()
 
 #Limiar minimo do buffer
 BMin = 10
-Breb = 0
+Breb = 0.5
 avaliationTime = 720
 
 #Recuperar todos os executions
@@ -65,6 +65,7 @@ listaBuffer = buffersVideo[::-1]
 listaProbabilityTxt = []
 probability = []
 probabilidade_sum = 0
+countReb_sum = 0
 for i in  range(len(listaBuffer)):
     bufferlevelvideo = float(listaBuffer[i][2])
     time = datetime.strptime(listaBuffer[i][1], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -91,20 +92,23 @@ for i in  range(len(listaBuffer)):
                     countGreater += 1
                 else:
                     countSmaller += 1
-                    if float(listaBuffer[internalIndice][2]) == float(Breb):
+                    if float(listaBuffer[internalIndice][2]) <= float(Breb):
                         countReb += 1
                         
             internalIndice += 1
         
         print countGreater, countSmaller, countReb
+        #probabilidade = float(countSmaller)/(float(countGreater) + float(countSmaller))
         probabilidade = float(countSmaller)/(float(countGreater) + float(countSmaller))
         probabilidade_sum += probabilidade
+        countReb_sum += countReb
         print probabilidade
         probability = [deltaTime1, probabilidade]
         listaProbabilityTxt.append(probability)
 
 averageProb = probabilidade_sum/len(listaProbabilityTxt)
 print "Media de Probabilidade: " + str(averageProb)
+print "Numero de RBuf: " + str(countReb_sum)
         
 #Criar o arquivo txt para gravar os tempos de inicio, fim e duracao das rebufferizacoes
 arqLogsProbabilityTxt = open(path_logsprob_txt + "/log_probability_exec"+str(idExecucao1)+".txt" , 'w')

@@ -30,6 +30,7 @@ for txtLogsFairtFile in txtLogsFairtFiles:
     txtLogsFairFilewithPath = path_logsfair_txt + "/" + txtLogsFairtFile
     print txtLogsFairFilewithPath
     algo = txtLogsFairtFile.split("_")
+    print txtLogsFairFilewithPath
     algo = algo[2]
     
     if virg == True:
