@@ -29,7 +29,7 @@ except:
 #Obter o diretorio onde os arquivos txt serao gerados 
 arq = open("entrada_diretorio_captura.txt","r")
 linha = arq.readline()
-path, idExecucao, idExecucao2, idExecucao3, alg = linha.split()
+path, idExecucao, idExecucao2, idExecucao3, alg, exper = linha.split()
 path_logsinstability_txt = str(path) + "/txt_logsinstability"
 arq.close()
 
@@ -76,7 +76,7 @@ for execution in executions:
             deltaTime =  time - inicialTimeSession
             deltaTime = deltaTime.total_seconds()
             
-            if deltaTime <= avaliationTime:
+            if deltaTime <= avaliationTime and deltaTime >= 60:
                 for d in range(0, k):
                     bitrate =  int(throughs1[i - d][5]) + 100 #float(throughs1[i - d][2])/float(throughs1[i - d][3])
                     last_bitrate = int(throughs1[i - d - 1][5]) + 100 #float(throughs1[i - d - 1][2])/float(throughs1[i - d - 1][3])

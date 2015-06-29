@@ -36,7 +36,7 @@ arq.close()
 #executions = [idExecucao1, idExecucao2, idExecucao3]
 #executions = ["59", "63", "64", "66", "69", "70", "72", "73", "75", "77"]
 #executions = ["39", "40", "42", "44", "46", "48", "51", "53", "55", "57"]
-executions = ["79", "81", "83", "86", "87", "90", "92", "93", "94", "97"]
+#executions = ["79", "81", "83", "86", "87", "90", "92", "93", "94", "97"]
 
 #Recuperar todos os throughs de tres sessoes especificas
 

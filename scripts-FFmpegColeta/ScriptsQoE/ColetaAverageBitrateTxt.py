@@ -15,14 +15,14 @@ from operator import itemgetter
  
 #Conectar ao banco
 try:
-    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db')
+    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db_fase3')
 except:
     print "Error Connection"
 
 cursor = connection.cursor()
   
 try:
-    connection.select_db("dash_db")
+    connection.select_db("dash_db_fase3")
 except:
     print "Error DB Selection"
 
@@ -34,8 +34,10 @@ path_logsfairness_txt = str(path) + "/txt_logsfairness"
 path_logs_txt = str(path) + "/logs"
 arq.close()
 
-executions = ["59", "63", "64", "66", "69", "70", "72", "73", "75", "77"]
-#executions = [idExecucao1, idExecucao2, idExecucao3]
+#executions = ["19", "21", "23", "25", "27", "29"]
+#executions = ["31", "34", "36", "37", "39", "41"]
+#executions = ["43", "45", "48", "49", "51", "53"]
+executions = [idExecucao1, idExecucao2, idExecucao3]
 #Recuperar todos os throughs de tres sessoes especificas
 
 avaliationTime = 720
@@ -85,7 +87,7 @@ for execution in executions:
             deltaTime =  time - inicialTimeSession
             deltaTime = deltaTime.total_seconds()
             
-            if deltaTime <= avaliationTime and deltaTime>=60:
+            if deltaTime <= avaliationTime and deltaTime >= 60:
                 bytes = float(throughs[i][6]) #bytes 
                 duration_segment = float(throughs[i][7]) #duracao do segmento em segundos  
                 through = float(throughs[i][9]) + 100 #kbps 
@@ -131,7 +133,7 @@ print "Media BitRate: "+ str(averageBitRateResultMedia)
 #arqLogsTxt.close()
 
 #Criar o arquivo txt para gravar o algoritmo e sua justica
-arqLogsFairnessTxt = open(path_logsfairness_txt + "/log_fairness_"+alg+"_ex6.txt" , 'w')   
+arqLogsFairnessTxt = open(path_logsfairness_txt + "/log_fairness_"+alg+"_ex"+exper+".txt" , 'w')   
 arqLogsFairnessTxt.write(str(alg) + " " + str(fairness) + "\n")   
 arqLogsFairnessTxt.close()
 

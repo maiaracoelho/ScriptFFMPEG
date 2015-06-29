@@ -29,7 +29,7 @@ except:
 #Obter o diretorio onde os arquivos txt serao gerados 
 arq = open("entrada_diretorio_captura.txt","r")
 linha = arq.readline()
-path, idExecucao, idExecucao2, idExecucao3, alg = linha.split()
+path, idExecucao, idExecucao2, idExecucao3, alg, exper = linha.split()
 path_logswitchs_txt = str(path) + "/txt_logspopularity"
 path_logsrebuffers_txt = str(path) + "/txt_logsrebuffers"
 arq.close()
@@ -56,12 +56,12 @@ for execution in executions:
         print "------>ExecutionId: %d"%id_execution 
         print "FRparameter: %s"%fr_parameter # Pegar FR
         #Recuperar todos os throughputs relacionados a execucao
-        cursor.execute ('SELECT id, time, quality, bandwidth FROM dash_throughseg WHERE fk_execution = %d' %int(execution))
+        cursor.execute ('SELECT id, time, quality, bandwidth FROM dash_throughseg WHERE fk_execution = %d' %int(id_execution))
         throughs1 = cursor.fetchall()
         inicialTimeSession = datetime.strptime(throughs1[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
 
         #Recuperar todos os niveis de buffer relacionados a execucao
-        cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(execution))
+        cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(id_execution))
         buffersVideo = cursor.fetchall()
         
         switch_count = 0
@@ -76,7 +76,7 @@ for execution in executions:
             timeThrough = datetime.strptime(throughs1[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
             deltaTimeThrough =  timeThrough - inicialTimeSession
             deltaTimeThrough = deltaTimeThrough.total_seconds()
-            if deltaTimeThrough <= avaliationTime:
+            if deltaTimeThrough <= avaliationTime and deltaTimeThrough >= 60:
                 bitrate_parameter = (int(through[3]) + 100)
                 bitrates_list.append(bitrate_parameter)
             
@@ -92,7 +92,7 @@ for execution in executions:
         dict_bitrates_sorted = sorted(dict_bitrates.items(), key=itemgetter(0))
         
         #frequencia de troca
-        tx_switch_freq = switch_count/avaliationTime
+        tx_switch_freq = switch_count/(avaliationTime - 60)
         #Media das amplitudes das entre as representacoes das trocas
         sum_amplitudes_video = 0
         for amplitude in amplitudes_list:
@@ -142,7 +142,7 @@ for execution in executions:
                     deltaTime = time2 - time1
                     deltaTime = deltaTime.total_seconds()
                     
-                    if deltaTime <= avaliationTime:
+                    if deltaTime <= avaliationTime and deltaTime >= 60:
                         durationsvideo = [deltaTime1, deltaTime2, deltaTime]
                         arqLogsRebufferTxt.write(str(deltaTime1) + " " + str(deltaTime) + "\n")   
                         arqLogsRebufferTxt.write(str(deltaTime2) + " " + str(deltaTime) + "\n")                      
@@ -153,7 +153,7 @@ for execution in executions:
         arqLogsRebufferTxt.close()
         
 
-        tx_bufferVideo_freq = len(durationsvideo_list)/float(avaliationTime)
+        tx_bufferVideo_freq = len(durationsvideo_list)/float(avaliationTime - 60)
         #Media das duracoes das rebufferizacoes de video
         duration_sum_video = 0
         for duration in durationsvideo_list:

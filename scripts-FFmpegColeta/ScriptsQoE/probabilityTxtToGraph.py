@@ -14,7 +14,7 @@ import Gnuplot, Gnuplot.funcutils
 
 arq = open("entrada_diretorio_captura.txt","r")
 linha = arq.readline()
-path, logbw,  idExecucao = linha.split()
+path, idExecucao, idExecucao2, idExecucao3, alg, exper = linha.split()
 path_logspop_txt = str(path) + "/txt_logsprobability"
 path_graphs_pop = str(path) + "/graphs_probability"
 arq.close()

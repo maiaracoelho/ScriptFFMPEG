@@ -28,7 +28,7 @@ except:
 #Obter o diretorio onde os arquivos txt serao gerados 
 arq = open("entrada_diretorio_captura.txt","r")
 linha = arq.readline()
-path, idExecucao1, idExecucao2, idExecucao3, alg = linha.split()
+path, idExecucao1, idExecucao2, idExecucao3, alg, exper = linha.split()
 path_logsprob_txt = str(path) + "/txt_logsprobability"
 arq.close()
 
@@ -79,7 +79,7 @@ for i in  range(len(listaBuffer)):
     countSmaller = 0
     countReb = 0
             
-    if deltaTime2 >= 0 and deltaTime1 >= 15 and deltaTime1 <= avaliationTime:
+    if deltaTime2 >= 60 and deltaTime1 >= 75 and deltaTime1 <= avaliationTime:
         internalIndice = i
         print "delta2: "+str(deltaTime2) +" delta1: "+ str(deltaTime1)
                 
@@ -108,7 +108,6 @@ for i in  range(len(listaBuffer)):
 
 averageProb = probabilidade_sum/len(listaProbabilityTxt)
 print "Media de Probabilidade: " + str(averageProb)
-print "Numero de RBuf: " + str(countReb_sum)
         
 #Criar o arquivo txt para gravar os tempos de inicio, fim e duracao das rebufferizacoes
 arqLogsProbabilityTxt = open(path_logsprob_txt + "/log_probability_exec"+str(idExecucao1)+".txt" , 'w')
