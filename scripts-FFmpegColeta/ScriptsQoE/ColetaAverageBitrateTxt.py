@@ -1,7 +1,7 @@
 '''
-Created on 03/02/2015
+Created on 03/03/2015
 
-@author: dashclient
+@author: Maiara
 '''
 #!/usr/bin/env python
 
@@ -15,14 +15,14 @@ from operator import itemgetter
  
 #Conectar ao banco
 try:
-    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db_fase3')
+    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db')
 except:
     print "Error Connection"
 
 cursor = connection.cursor()
   
 try:
-    connection.select_db("dash_db_fase3")
+    connection.select_db("dash_db")
 except:
     print "Error DB Selection"
 
@@ -30,14 +30,14 @@ except:
 arq = open("entrada_diretorio_captura.txt","r")
 linha = arq.readline()
 path, idExecucao1, idExecucao2, idExecucao3, alg, exper = linha.split()
-path_logsfairness_txt = str(path) + "/txt_logsfairness"
-path_logs_txt = str(path) + "/logs"
+#path_logsfairness_txt = str(path) + "/txt_logsfairness"
+#path_logs_txt = str(path) + "/logs"
 arq.close()
 
-#executions = ["19", "21", "23", "25", "27", "29"]
+executions = ["106","108","109"]
 #executions = ["31", "34", "36", "37", "39", "41"]
 #executions = ["43", "45", "48", "49", "51", "53"]
-executions = [idExecucao1, idExecucao2, idExecucao3]
+#executions = [idExecucao1, idExecucao2, idExecucao3]
 #Recuperar todos os throughs de tres sessoes especificas
 
 avaliationTime = 720
@@ -58,14 +58,14 @@ averageBitRateResultSum = 0
 #Lista todas as execucoes
 
 #Criar o arquivo txt para gravar o algoritmo e sua justica
-arqLogsTxt = open(path_logs_txt + "/log_fairness.txt" , 'a')   
+#arqLogsTxt = open(path_logs_txt + "/log_fairness.txt" , 'a')   
 print "----> Experimento "+exper+"<-----"
-arqLogsTxt.write("----> Experimento "+exper+"<-----"+"\n")   
+#arqLogsTxt.write("----> Experimento "+exper+"<-----"+"\n")   
 
 
 for execution in executions:
     print "----> Id Execution "+execution+"<-----"
-    arqLogsTxt.write("----> Id Execution "+execution+"<-----"+"\n")   
+    #arqLogsTxt.write("----> Id Execution "+execution+"<-----"+"\n")   
  
     #Recuperar todos os throughputs relacionados a execucao
     cursor.execute ('SELECT * FROM dash_execution WHERE id = %d' %int(execution))
@@ -133,9 +133,9 @@ print "Media BitRate: "+ str(averageBitRateResultMedia)
 #arqLogsTxt.close()
 
 #Criar o arquivo txt para gravar o algoritmo e sua justica
-arqLogsFairnessTxt = open(path_logsfairness_txt + "/log_fairness_"+alg+"_ex"+exper+".txt" , 'w')   
-arqLogsFairnessTxt.write(str(alg) + " " + str(fairness) + "\n")   
-arqLogsFairnessTxt.close()
+#arqLogsFairnessTxt = open(path_logsfairness_txt + "/log_fairness_"+alg+"_ex"+exper+".txt" , 'w')   
+#arqLogsFairnessTxt.write(str(alg) + " " + str(fairness) + "\n")   
+#arqLogsFairnessTxt.close()
 
 
        
