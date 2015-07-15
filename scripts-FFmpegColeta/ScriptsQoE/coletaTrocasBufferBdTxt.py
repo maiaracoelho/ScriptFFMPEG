@@ -36,7 +36,7 @@ arq.close()
 
 #Limiar minimo do buffer
 BMin = 0.5
-avaliationTime = 720
+avaliationTime = 720.0
 #Recuperar todos os executions
 cursor.execute ('SELECT * FROM dash_execution')
 executions = cursor.fetchall()
@@ -49,12 +49,7 @@ for execution in executions:
      
      if execution[4] == "video":
         id_execution = execution[0]
-        mpd_peaces = execution[3].split("/")
-        #inicialTimeSession = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
-        #Pega a metrica FR
-        fr_parameter = mpd_peaces[5]
         print "------>ExecutionId: %d"%id_execution 
-        print "FRparameter: %s"%fr_parameter # Pegar FR
         #Recuperar todos os throughputs relacionados a execucao
         cursor.execute ('SELECT id, time, quality, bandwidth FROM dash_throughseg WHERE fk_execution = %d' %int(id_execution))
         throughs1 = cursor.fetchall()
@@ -73,10 +68,10 @@ for execution in executions:
         
         #Contar qtde de trocas e a ampplitude das trocas
         for through in throughs1:
-            timeThrough = datetime.strptime(throughs1[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
+            timeThrough = datetime.strptime(through[1], '%Y-%m-%dT%H:%M:%S.%fZ')
             deltaTimeThrough =  timeThrough - inicialTimeSession
             deltaTimeThrough = deltaTimeThrough.total_seconds()
-            if deltaTimeThrough <= avaliationTime and deltaTimeThrough >= 60:
+            if deltaTimeThrough <= avaliationTime and deltaTimeThrough >= 60.0:
                 bitrate_parameter = (int(through[3]) + 100)
                 bitrates_list.append(bitrate_parameter)
             
@@ -92,12 +87,16 @@ for execution in executions:
         dict_bitrates_sorted = sorted(dict_bitrates.items(), key=itemgetter(0))
         
         #frequencia de troca
-        tx_switch_freq = switch_count/(avaliationTime - 60)
+        tx_switch_freq = switch_count/(avaliationTime - 60.0)
         #Media das amplitudes das entre as representacoes das trocas
         sum_amplitudes_video = 0
+        if(len(amplitudes_list) != 0):
+           average_switch_amplitude_video = sum_amplitudes_video/len(amplitudes_list)
+        else:
+            average_switch_amplitude_video = 0
+            
         for amplitude in amplitudes_list:
             sum_amplitudes_video += amplitude[2]
-        average_switch_amplitude_video = sum_amplitudes_video/len(amplitudes_list)
 
         print dict_bitrates_sorted
         print "Switchs: %d"%switch_count 
@@ -142,7 +141,7 @@ for execution in executions:
                     deltaTime = time2 - time1
                     deltaTime = deltaTime.total_seconds()
                     
-                    if deltaTime <= avaliationTime and deltaTime >= 60:
+                    if deltaTime <= avaliationTime and deltaTime >= 60.0:
                         durationsvideo = [deltaTime1, deltaTime2, deltaTime]
                         arqLogsRebufferTxt.write(str(deltaTime1) + " " + str(deltaTime) + "\n")   
                         arqLogsRebufferTxt.write(str(deltaTime2) + " " + str(deltaTime) + "\n")                      

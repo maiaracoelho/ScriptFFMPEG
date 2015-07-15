@@ -33,7 +33,10 @@ path, idExecucao, idExecucao2, idExecucao3, alg, exper = linha.split()
 path_logsrebuffers_txt = str(path) + "/txt_logsrebuffers"
 arq.close()
 
-executions = ["2", "3", "6"]
+cursor.execute ('SELECT * FROM dash_execution')
+executions = cursor.fetchall()
+
+#executions = ["136","137","138", "142", "143", "145"]
 
 #Limiar minimo do buffer
 BMin = 0.5
@@ -41,35 +44,30 @@ avaliationTime = 720
 
 #Lista todas as execucoes
 for execution in executions:
-    #Recuperar todos os throughputs relacionados a execucao
-    cursor.execute ('SELECT * FROM dash_execution WHERE id = %d' %int(execution))
-    ex = cursor.fetchone()
-    
-    inicialTimeSession = datetime.strptime(ex[1], '%Y-%m-%dT%H:%M:%S.%fZ')
+    if execution[4]=="video":
+        print execution[0]
+        inicialTimeSession = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    #Recuperar todos os niveis de buffer relacionados a execucao
-    cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(ex[0]))
-    buffers = cursor.fetchall()
+        #Recuperar todos os niveis de buffer relacionados a execucao
+        cursor.execute ('SELECT * FROM dash_bufferlevel WHERE fk_execution = %d' %int(execution[0]))
+        buffers = cursor.fetchall()
         
-    #calcular rebufferizacoes
-    sum_video_times = 0.0
-    rebuffer_video_count = 0
-    rebuffer_video_flag = True
-    durations_video_list = []
-    durations_video = []
-    session_time1 = datetime.strptime(buffers[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
-    session_time2 = datetime.strptime(buffers[len(buffers) - 1][1], '%Y-%m-%dT%H:%M:%S.%fZ')
-    session_time = session_time2 - session_time1
-    session_time = session_time.total_seconds()
+        #calcular rebufferizacoes
+        sum_video_times = 0.0
+        rebuffer_video_count = 0
+        rebuffer_video_flag = True
+        durations_video_list = []
+        durations_video = []
+        session_time1 = datetime.strptime(buffers[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
+        session_time2 = datetime.strptime(buffers[len(buffers) - 1][1], '%Y-%m-%dT%H:%M:%S.%fZ')
+        session_time = session_time2 - session_time1
+        session_time = session_time.total_seconds()
             
-    #Criar o arquivo txt para gravar os tempos de inicio, fim e duracao das rebufferizacoes
-    arqLogsRebufferTxt = open(path_logsrebuffers_txt + "/log_rebuffers_exec"+str(ex[0])+".txt" , 'w')
+        #Criar o arquivo txt para gravar os tempos de inicio, fim e duracao das rebufferizacoes
+        arqLogsRebufferTxt = open(path_logsrebuffers_txt + "/log_rebuffers_exec"+str(execution[0])+".txt" , 'w')
         
-    if ex[4]=="video":
         bufferlevel_video_last = int(buffers[0][2])
    
-    if ex[4]=="video":
-        
         for i in range(len(buffers)):
             bufferlevelvideo = float(buffers[i][2])
             time = datetime.strptime(buffers[i][1], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -99,8 +97,8 @@ for execution in executions:
                         
                         sum_video_times += deltaTime
                         
-                        print "Paradas "+str(rebuffer_video_count) +" "+ str(deltaTime)
-                        print "Soma dos Tempos"+str(sum_video_times)
+                        #print "Paradas "+str(rebuffer_video_count) +" "+ str(deltaTime)
+                        #print "Soma dos Tempos"+str(sum_video_times)
                         
             bufferlevel_video_last = bufferlevelvideo
             descontin_tx = float(sum_video_times)/float(avaliationTime - 60)
@@ -118,5 +116,3 @@ for execution in executions:
         print "Descontinuidade: %f"%descontin_tx
         print "Duracao Total das paradas: %f"%sum_video_times
         print "Duracao Media das paradas: %f"%average_duration_rebuffer_video
-
-

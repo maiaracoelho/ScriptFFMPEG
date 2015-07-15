@@ -93,8 +93,12 @@ for execution in executions:
         sum_amplitudes_video = 0
         for amplitude in amplitudes_list:
             sum_amplitudes_video += amplitude[2]
-        average_switch_amplitude_video = sum_amplitudes_video/len(amplitudes_list)
-
+            
+        if(len(amplitudes_list) != 0):
+           average_switch_amplitude_video = sum_amplitudes_video/len(amplitudes_list)
+        else:
+            average_switch_amplitude_video = 0
+        
         print dict_bitrates_sorted
         print "Switchs: %d"%switch_count 
         print "SwitchFrequency: %f"%tx_switch_freq

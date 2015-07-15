@@ -23,8 +23,8 @@ try:
 except:
     print "Error DB Selection"
 
-experiment = 1  
-executions = []
+experiment = 9
+executions = [40,42,44,45,47,48,50,52,55]
 
 for execution in executions:
     print execution

@@ -49,12 +49,7 @@ for execution in executions:
      
      if execution[4] == "video":
         id_execution = execution[0]
-        mpd_peaces = execution[3].split("/")
-        #inicialTimeSession = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
-        #Pega a metrica FR
-        fr_parameter = mpd_peaces[5]
         print "------>ExecutionId: %d"%id_execution 
-        print "FRparameter: %s"%fr_parameter # Pegar FR
         #Recuperar todos os throughputs relacionados a execucao
         cursor.execute ('SELECT id, time, size_seg, duration, quality, bandwidth FROM dash_throughseg WHERE fk_execution = %d' %int(id_execution))
         throughs1 = cursor.fetchall()
@@ -76,7 +71,7 @@ for execution in executions:
             deltaTime =  time - inicialTimeSession
             deltaTime = deltaTime.total_seconds()
             
-            if deltaTime <= avaliationTime and deltaTime >= 60:
+            if deltaTime <= avaliationTime and deltaTime >= 60.0:
                 for d in range(0, k):
                     bitrate =  int(throughs1[i - d][5]) + 100 #float(throughs1[i - d][2])/float(throughs1[i - d][3])
                     last_bitrate = int(throughs1[i - d - 1][5]) + 100 #float(throughs1[i - d - 1][2])/float(throughs1[i - d - 1][3])
