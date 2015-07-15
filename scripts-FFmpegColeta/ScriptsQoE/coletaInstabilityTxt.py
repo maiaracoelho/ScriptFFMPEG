@@ -33,8 +33,6 @@ path, idExecucao, idExecucao2, idExecucao3, alg, exper = linha.split()
 path_logsinstability_txt = str(path) + "/txt_logsinstability"
 arq.close()
 
-#Limiar minimo do buffer
-BMin = 10
 avaliationTime = 720
 
 #Recuperar todos os executions

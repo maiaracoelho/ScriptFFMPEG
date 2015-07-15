@@ -34,7 +34,7 @@ path, idExecucao1, idExecucao2, idExecucao3, alg, exper = linha.split()
 #path_logs_txt = str(path) + "/logs"
 arq.close()
 
-executions = ["148","149","151", "154", "156", "158"]
+executions = ["112","113","114", "115", "117", "120"]
 #executions = [idExecucao1, idExecucao2, idExecucao3]
 #Recuperar todos os throughs de tres sessoes especificas
 
