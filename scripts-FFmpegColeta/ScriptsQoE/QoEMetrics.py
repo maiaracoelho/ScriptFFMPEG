@@ -29,6 +29,88 @@ def conectaBanco():
     
     return conecta
 
+def definirTempoInicialBuffer(conecta, vetor):
+    
+    cursor = conecta.cursor()
+    sql="SELECT * FROM  dash_bufferlevel WHERE fk_execution=%d"%int(vetor[0])
+    try:
+         cursor.execute(sql)
+         buffers = cursor.fetchall()
+              
+         start_time = datetime.strptime(buffers[0][1], '%Y-%m-%dT%H:%M:%S.%fZ') 
+              
+         #fazer o start_time ser o maior e o finish_time ser o menor tempo
+         maior_time_inicial = start_time
+    
+    except MySQLdb.Error, e:
+          print "Erro: " + sql
+          print e
+            
+    for i in range(1,len(vetor)):
+        sql="SELECT * FROM  dash_bufferlevel WHERE fk_execution=%d"%int(vetor[i])
+        try:
+            cursor.execute(sql)
+            buffers = cursor.fetchall()
+              
+            start_time = datetime.strptime(buffers[0][1], '%Y-%m-%dT%H:%M:%S.%fZ') 
+              
+            #fazer o start_time ser o maior e o finish_time ser o menor tempo se forem respectivamente, maior e menor
+            #que maior_time_inicial e menor_time_final
+            if start_time > maior_time_inicial:
+                maior_time_inicial = start_time
+            
+        except MySQLdb.Error, e:
+            print "Erro: Banco nao encontrado",e
+            menu = raw_input()
+            os.system("clear")
+            menu()
+            
+    return maior_time_inicial
+    
+def definirTempoFinalBuffer(conecta, executions):
+ 
+    cursor = conecta.cursor()
+    sql="SELECT * FROM  dash_bufferlevel WHERE fk_execution=%d"%int(executions[0])
+    try:
+         buffers = 0
+         cursor.execute(sql)
+         buffers = cursor.fetchall()
+              
+         finish_time = datetime.strptime(buffers[len(buffers) - 1][1], '%Y-%m-%dT%H:%M:%S.%fZ') 
+         #print"\n----------------------------\n"
+         #print " ID: %s\n FinishTime: %s"%(int(executions[0]), finish_time)
+              
+         #fazer o start_time ser o maior e o finish_time ser o menor tempo
+         menor_time_final = finish_time
+    
+    except MySQLdb.Error, e:
+          print "Erro: " + sql
+          print e
+            
+    
+    for i in range(1,len(executions)):
+        sql="SELECT * FROM  dash_bufferlevel WHERE fk_execution=%d"%int(executions[i])
+        try:
+            buffers = 0
+            cursor.execute(sql)
+            buffers = cursor.fetchall()
+              
+            finish_time = datetime.strptime(buffers[len(buffers) - 1][1], '%Y-%m-%dT%H:%M:%S.%fZ') 
+            #print"\n----------------------------\n"
+            #print " ID: %s\n FinishTime: %s"%(int(executions[i]), finish_time)
+              
+            #fazer o start_time ser o maior e o finish_time ser o menor tempo se forem respectivamente, maior e menor
+            #que maior_time_inicial e menor_time_final
+            if finish_time < menor_time_final:
+                menor_time_final = finish_time
+              
+        except MySQLdb.Error, e:
+            print "Erro: Banco nao encontrado",e
+            menu = raw_input()
+            os.system("clear")
+            menu()
+            
+    return menor_time_final
 #alinha as execucoes para que as sessoes sejam avaliadas no periodo em que todas 
 #estivessem reproduzindo video, ao mesmo tempo
 def definirTempoInicialAvaliacao(conecta, vetor):
@@ -126,8 +208,10 @@ def coletarTrocasAmplitudes(conecta):
     print "Tempo Final: %s"%final_time
     
     cursor = conecta.cursor()
-    sum_switch_count = 0
-    average_amplitudes = 0
+    sum_switch_up_count = 0
+    sum_switch_down_count = 0
+    average_amplitudes_pos = 0
+    average_amplitudes_neg = 0
     
     for i in range(0,len(executions)):
         sql="SELECT time, start_time, finish_time, quality, bandwidth FROM dash_throughseg WHERE fk_execution=%d"%int(executions[i])
@@ -141,11 +225,14 @@ def coletarTrocasAmplitudes(conecta):
             os.system("clear")
             menu()
         
-        switch_count = 0
+        switch_up_count = 0
+        switch_down_count = 0
         average_switch_amplitude_video = 0
         bitrates_list=[]
-        amplitudes = []
-        amplitudes_list = []
+        amplitudes_pos = []
+        amplitudes_neg = []
+        amplitudes_pos_list = []
+        amplitudes_neg_list = []
         bitrate_last = (int(segmentos[0][4]) + 100) #kbps
         
         #Contar qtde de trocas e a ampplitude das trocas
@@ -156,37 +243,60 @@ def coletarTrocasAmplitudes(conecta):
                 bitrate = (int(seg[4]) + 100)
                 bitrates_list.append(bitrate)
             
-                if bitrate != bitrate_last: 
-                    switch_count += 1
-                    amplitudes = [bitrate_last, bitrate, abs(bitrate_last - bitrate)]
-                    amplitudes_list.append(amplitudes)
+                if bitrate > bitrate_last: 
+                    switch_up_count += 1
+                    amplitudes_pos = [bitrate_last, bitrate, abs(bitrate_last - bitrate)]
+                    amplitudes_pos_list.append(amplitudes_pos)
+                    
+                if bitrate < bitrate_last: 
+                    switch_down_count += 1
+                    amplitudes_neg = [bitrate_last, bitrate, abs(bitrate_last - bitrate)]
+                    amplitudes_neg_list.append(amplitudes_neg)
                 
                 bitrate_last = bitrate
         
-        #Media das amplitudes entre as representacoes das trocas
-        sum_amplitudes_video = 0
-        for amplitude in amplitudes_list:
-            sum_amplitudes_video += amplitude[2]
-            
-        if(len(amplitudes_list) != 0):
-           average_switch_amplitude_video = sum_amplitudes_video/len(amplitudes_list)
-        else:
-            average_switch_amplitude_video = 0
+        #Media das amplitudes positivas entre as representacoes das trocas
+        sum_amplitudes_pos_video = 0
+        for amplitude in amplitudes_pos_list:
+            sum_amplitudes_pos_video += amplitude[2]
         
-        sum_switch_count += switch_count 
-        average_amplitudes += average_switch_amplitude_video 
+         #Media das amplitudes negativas entre as representacoes das trocas
+        sum_amplitudes_neg_video = 0
+        for amplitude in amplitudes_neg_list:
+            sum_amplitudes_neg_video += amplitude[2]
+            
+        if(len(amplitudes_pos_list) != 0):
+           average_switch_amplitude_pos_video = sum_amplitudes_pos_video/len(amplitudes_pos_list)
+        else:
+            average_switch_amplitude_pos_video = 0
+            
+        if(len(amplitudes_neg_list) != 0):
+           average_switch_amplitude_neg_video = sum_amplitudes_neg_video/len(amplitudes_neg_list)
+        else:
+            average_switch_amplitude_neg_video = 0
+        
+        sum_switch_up_count += switch_up_count 
+        sum_switch_down_count += switch_down_count 
+        
+        average_amplitudes_pos += average_switch_amplitude_pos_video 
+        average_amplitudes_neg += average_switch_amplitude_neg_video 
         
         print "ID: %d"%int(executions[i]) 
         print "Qtde de segmentos: %d"%len(segmentos) 
-        print "Switchs: %d"%switch_count 
-        print "SwitchAmplitudesAverage: %f"%average_switch_amplitude_video
+        print "Switchs Pos: %d"%switch_up_count 
+        print "Switchs Neg: %d"%switch_down_count 
+        print "SwitchAmplitudesAverage Pos: %f"%average_switch_amplitude_pos_video
+        print "SwitchAmplitudesAverage Neg: %f"%average_switch_amplitude_neg_video
         
     print "==================================="
-    print "SwitchsAverage: %f"%(float(sum_switch_count)/len(executions))
-    print "AmplitudeAverage: %f"%(float(average_amplitudes)/len(executions))
+    print "SwitchsAverage Pos: %f"%(float(sum_switch_up_count)/len(executions))
+    print "SwitchsAverage Neg: %f"%(float(sum_switch_down_count)/len(executions))
+    print "AmplitudeAverage Pos: %f"%(float(average_amplitudes_pos)/len(executions))
+    print "AmplitudeAverage Neg: %f"%(float(average_amplitudes_neg)/len(executions))
 
 '''Funcao para coletar a taxa media por execucao, a media dessas medias e a justica entre as execucoes informadas'''        
 def coletarTaxaJustica(conecta):
+    
     executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
     executions = map(int, executions.split())
     inicial_time = definirTempoInicialAvaliacao(conecta, executions)
@@ -194,7 +304,9 @@ def coletarTaxaJustica(conecta):
     final_time = definirTempoFinalAvaliacao(conecta, executions)
     print "Tempo Final: %s"%final_time
     expectResult = str(raw_input("\nDigite o recurso esperado: "))
-
+    deltaTime =  final_time - inicial_time
+    deltaTime = deltaTime.total_seconds()
+    
     cursor = conecta.cursor()
     
     gotResult = 0 # kbps bytes da sessao/tempo da sessao
@@ -218,28 +330,30 @@ def coletarTaxaJustica(conecta):
         
         segCount=0
         bitratesSum=0
-        bytesSum=0
+        bitsSum=0
         bitrateSum=0
+        durationSum=0
         
         for seg in segmentos:
             start_time_seg = datetime.strptime(seg[1], '%Y-%m-%dT%H:%M:%S.%fZ')
             finish_time_seg = datetime.strptime(seg[2], '%Y-%m-%dT%H:%M:%S.%fZ')
             if start_time_seg >= inicial_time and finish_time_seg <= final_time:
-                bytes = float(seg[3]) #bytes 
-                bytesSum  += bytes
+                #bits = float(seg[3]) #bits 
+                #bits = bits/1000.0 #kbits 
+                #bitsSum  += bits
                 duration_segment = float(seg[4]) #duracao do segmento em segundos 
+                durationSum  += duration_segment 
                 bitrate = float(seg[6]) + 100 #kbps  
                 bitrateSum  += (bitrate) * duration_segment
                 bitratesSum  += bitrate 
                 segCount += 1
 
-        #averageBitRateResult = bitrateSum/(avaliationTime - 60)     
-        averageBitRateResult = bitratesSum/segCount     
-        gotResult = bitratesSum/segCount     
+        averageBitRateResult = bitrateSum/durationSum     
+        gotResult = bitratesSum/durationSum     
 
         averageBitRateResultSum += averageBitRateResult    
   
-        xi = float(expectResult)/float(gotResult)
+        xi = float(gotResult)/float(expectResult)
         xiSum += xi
         xi2 = xi * xi
         xiSum2 += xi2
@@ -248,17 +362,21 @@ def coletarTaxaJustica(conecta):
     
         print "ID: %d"%int(executions[i]) 
         print "Qtde de segmentos: %d"%len(segmentos) 
-        print "Bitrate Average: "+ str(averageBitRateResult)
-        print "Bytes da Sessao: "+ str(bytesSum)
+        print "Bitrate Average kbps: "+ str(averageBitRateResult)
+        print "gotResult: "+ str(gotResult)
+        print "Duracao da sessao: "+ str(deltaTime)
+        print "Duracao da Total dos segmentos: "+ str(durationSum)
         #print "Xi da Sessao: "+ str(xi)
         #print "Xi2 da Sessao: "+ str(xi2)
         #print "GotResult em kbps da Sessao: "+ str(gotResult)
 
     print "==================================="
     fairness =  (xiSum*xiSum)/(xiCount * xiSum2)
+    unfairness = math.sqrt(1-fairness)
     averageBitRateResultMedia = averageBitRateResultSum/xiCount
     print "xiCount: "+ str(xiCount)
     print "Justica: "+ str(fairness)
+    print "Injustica: "+ str(unfairness)
     print "Media BitRate: "+ str(averageBitRateResultMedia)
     #print "xiSum: "+ str(xiSum)
 
@@ -268,24 +386,40 @@ def coletarStallsDuracoes(conecta):
    
     executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
     executions = map(int, executions.split())
+    #Corte para tempo de sessao baseado nos segmentos, nao considera interrupcoes
     inicial_time = definirTempoInicialAvaliacao(conecta, executions)
-    print "Tempo Inicial: %s"%inicial_time
+    print "Tempo Inicial dos Segmentos: %s"%inicial_time
     final_time = definirTempoFinalAvaliacao(conecta, executions)
-    print "Tempo Final: %s"%final_time
-    BMin = 0.5
+    print "Tempo Final dos Segmentos: %s"%final_time
+    timeSessionSeg =  final_time - inicial_time
+    timeSessionSeg = timeSessionSeg.total_seconds()
 
+    #Corte para tempo de sessao baseado no buffer, considera interrupcoes
+    inicial_time_buffer = definirTempoInicialBuffer(conecta, executions)
+    print "Tempo Inicial do Buffer: %s"%inicial_time_buffer
+    final_time_buffer = definirTempoFinalBuffer(conecta, executions)
+    print "Tempo Final do Buffer: %s"%final_time_buffer
+    timeSessionBuffer =  final_time_buffer - inicial_time_buffer
+    timeSessionBuffer = timeSessionBuffer.total_seconds()
+
+    BMin = 0.5
     cursor = conecta.cursor()
     
     sum_stall_count = 0
     average_stalls_durations = 0
-    
-    
+    averageBitRateResultSum = 0
+
     for i in range(0,len(executions)):
         sql="SELECT * FROM dash_bufferlevel WHERE fk_execution = %d" %int(executions[i])
+        sql2="SELECT time, start_time, finish_time, size_seg, duration, quality, bandwidth FROM dash_throughseg WHERE fk_execution=%d"%int(executions[i])
+        
         try:
             cursor.execute(sql)
             buffers = cursor.fetchall()
-              
+
+            cursor.execute(sql2)
+            segmentos = cursor.fetchall()
+
         except MySQLdb.Error, e:
             print "Erro: Banco nao encontrado",e
             menu = raw_input()
@@ -304,7 +438,8 @@ def coletarStallsDuracoes(conecta):
             time_buffer = datetime.strptime(buffer[1], '%Y-%m-%dT%H:%M:%S.%fZ')
             bufferlevelvideo = float(buffer[2])
             
-            if time_buffer >= inicial_time and time_buffer <= final_time:
+            if time_buffer >= inicial_time_buffer and time_buffer <= final_time_buffer:
+                
                 if bufferlevelvideo <= BMin and bufferlevelvideo < bufferlevel_video_last: 
                     if rebuffer_video_flag == True:
                         time1 = time_buffer
@@ -338,17 +473,43 @@ def coletarStallsDuracoes(conecta):
         else:
             average_duration_rebuffer_video = 0
         
+        deltaTimeSessionBuffer = timeSessionBuffer - sum_video_times
+        
+        bitrateSum=0
+        durationSum=0
+        
+        for seg in segmentos:
+            start_time_seg = datetime.strptime(seg[1], '%Y-%m-%dT%H:%M:%S.%fZ')
+            finish_time_seg = datetime.strptime(seg[2], '%Y-%m-%dT%H:%M:%S.%fZ')
+            if start_time_seg >= inicial_time and finish_time_seg <= final_time:
+                duration_segment = float(seg[4]) #duracao do segmento em segundos 
+                durationSum  += duration_segment 
+                bitrate = float(seg[6]) + 100 #kbps  
+                bitrateSum  += (bitrate) 
+
+        averageBitRateResult = bitrateSum/timeSessionBuffer       
+
+        averageBitRateResultSum += averageBitRateResult    
+
         print "ID: %d"%int(executions[i]) 
         print "Qtde de Interrupcoes: %d"%rebuffer_video_count
+        print "Tempo da Sessao sem Interrupcoes: %f"%deltaTimeSessionBuffer
         print "Duracao Total das Interrupcoes: %f"%sum_video_times
+        print "Duracao do Total dos segmentos: "+ str(durationSum)
         print "Duracao Media das Interrupcoes: %f"%average_duration_rebuffer_video
-    
+        print "Qtde de segmentos: %d"%len(segmentos) 
+        print "Bitrate Average kbps: "+ str(averageBitRateResult)
+
         sum_stall_count += rebuffer_video_count
         average_stalls_durations += average_duration_rebuffer_video
+        averageBitRateResultMedia = averageBitRateResultSum/len(executions)
         
     print "==================================="
+    print "Tempo de Sessao baseado no Download: "+str(timeSessionSeg)
+    print "Tempo de Sessao baseado no Buffer: "+str(timeSessionBuffer)
     print "Qtde Media de Interrupcoes: %f"%(float(sum_stall_count)/len(executions))
     print "Media de Duracao das Interrupcoes: %f"%(float(average_stalls_durations)/len(executions))    
+    print "Media BitRate: "+ str(averageBitRateResultMedia)
 
 '''Funcao para coletar a instabilidade por execucao e a media entre as execucoes informadas'''        
 def coletarInst(conecta):
@@ -377,7 +538,7 @@ def coletarInst(conecta):
             menu()
         
         k = 4
-        diference_bitrate = 0
+        #diference_bitrate = 0
         bitrate_sum = 0
         instability_sum = 0
         segCount=0
@@ -392,7 +553,8 @@ def coletarInst(conecta):
                 for d in range(0, k):
                     bitrate =  int(segmentos[i - d][4]) + 100 #float(segmentos[i - d][2])/float(segmentos[i - d][3])
                     last_bitrate = int(segmentos[i - d - 1][4]) + 100 #float(segmentos[i - d - 1][2])/float(segmentos[i - d - 1][3])
-                    diference_bitrate +=  abs(bitrate -last_bitrate) * abs(k - d)
+                    if bitrate != last_bitrate:
+                        diference_bitrate +=  abs(bitrate -last_bitrate) * abs(k - d)
                     
                 for d in range(0, k):
                     bitrate_sum += (int(segmentos[i - d - 1][4]) + 100) * abs(k - d)
