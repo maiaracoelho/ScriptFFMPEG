@@ -198,6 +198,48 @@ def definirTempoFinalAvaliacao(conecta, executions):
             
     return menor_time_final
 
+def definirTempoInicialExecution(conecta, vetor):
+    
+    cursor = conecta.cursor()
+    sql="SELECT * FROM  dash_execution WHERE id=%d"%int(vetor[0])
+    try:
+         cursor.execute(sql)
+         execution = cursor.fetchone()
+              
+         start_time = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ') 
+         #print"\n----------------------------\n"
+         #print " ID: %s\n StartTime: %s"%(int(vetor[0]), start_time)
+              
+         #fazer o start_time ser o maior e o finish_time ser o menor tempo
+         maior_time_inicial = start_time
+    
+    except MySQLdb.Error, e:
+          print "Erro: " + sql
+          print e
+            
+    for i in range(1,len(vetor)):
+        sql="SELECT * FROM dash_execution WHERE id=%d"%int(vetor[i])
+        try:
+            cursor.execute(sql)
+            execution = cursor.fetchone()
+              
+            start_time = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ') 
+            #print"\n----------------------------\n"
+            #print " ID: %s\n StartTime: %s"%(int(vetor[i]), start_time)
+              
+            #fazer o start_time ser o maior e o finish_time ser o menor tempo se forem respectivamente, maior e menor
+            #que maior_time_inicial e menor_time_final
+            if start_time > maior_time_inicial:
+                maior_time_inicial = start_time
+            
+        except MySQLdb.Error, e:
+            print "Erro: Banco nao encontrado",e
+            menu = raw_input()
+            os.system("clear")
+            menu()
+            
+    return maior_time_inicial
+
 '''Funcao para coletar a qtde de trocas a media de amplitude por execucao e a media entre as execucoes informadas'''        
 def coletarTrocasAmplitudes(conecta):
     executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
@@ -299,9 +341,9 @@ def coletarTaxaJustica(conecta):
     
     executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
     executions = map(int, executions.split())
-    inicial_time = definirTempoInicialAvaliacao(conecta, executions)
+    inicial_time = definirTempoInicialExecution(conecta, executions)
     print "Tempo Inicial: %s"%inicial_time
-    final_time = definirTempoFinalAvaliacao(conecta, executions)
+    final_time = definirTempoFinalBuffer(conecta, executions)
     print "Tempo Final: %s"%final_time
     expectResult = str(raw_input("\nDigite o recurso esperado: "))
     deltaTime =  final_time - inicial_time
@@ -388,21 +430,17 @@ def coletarStallsDuracoes(conecta):
     executions = map(int, executions.split())
     #Corte para tempo de sessao baseado nos segmentos, nao considera interrupcoes
     inicial_time = definirTempoInicialAvaliacao(conecta, executions)
-    print "Tempo Inicial dos Segmentos: %s"%inicial_time
     final_time = definirTempoFinalAvaliacao(conecta, executions)
     timeSessionSeg =  final_time - inicial_time
     timeSessionSeg = timeSessionSeg.total_seconds()
-    print "Tempo Final dos Segmentos: %s"%final_time
-    timeSessionSeg =  final_time - inicial_time
-    timeSessionSeg = timeSessionSeg.total_seconds()
+    print "Tempo de sessao no corte de download: %s"%timeSessionSeg
 
     #Corte para tempo de sessao baseado no buffer, considera interrupcoes
     inicial_time_buffer = definirTempoInicialBuffer(conecta, executions)
-    print "Tempo Inicial do Buffer: %s"%inicial_time_buffer
     final_time_buffer = definirTempoFinalBuffer(conecta, executions)
-    print "Tempo Final do Buffer: %s"%final_time_buffer
     timeSessionBuffer =  final_time_buffer - inicial_time_buffer
     timeSessionBuffer = timeSessionBuffer.total_seconds()
+    print "Tempo de Sessao no corte do buffer: %s"%timeSessionBuffer
 
     BMin = 0.5
     cursor = conecta.cursor()
@@ -414,13 +452,18 @@ def coletarStallsDuracoes(conecta):
     for i in range(0,len(executions)):
         sql="SELECT * FROM dash_bufferlevel WHERE fk_execution = %d" %int(executions[i])
         sql2="SELECT time, start_time, finish_time, size_seg, duration, quality, bandwidth FROM dash_throughseg WHERE fk_execution=%d"%int(executions[i])
-        
+        sql3="SELECT * FROM dash_execution WHERE id = %d" %int(executions[i])
+
         try:
             cursor.execute(sql)
             buffers = cursor.fetchall()
 
             cursor.execute(sql2)
             segmentos = cursor.fetchall()
+            
+            cursor.execute(sql3)
+            execution = cursor.fetchone()
+
 
         except MySQLdb.Error, e:
             print "Erro: Banco nao encontrado",e
@@ -434,6 +477,12 @@ def coletarStallsDuracoes(conecta):
         durations_video_list = []
         durations_video = []
         bufferlevel_video_last = int(buffers[0][2])
+        
+        inicioBuffer = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ')
+        fimBuffer = datetime.strptime(buffers[len(buffers) - 1][1], '%Y-%m-%dT%H:%M:%S.%fZ') 
+        deltaInicioFimBuffer = fimBuffer - inicioBuffer
+        tempoSessaoBuffer = deltaInicioFimBuffer.total_seconds()
+        print "Tempo de Sessao Individual do buffer: %s"%tempoSessaoBuffer
         
         #Contar qtde de interrupcoes e a duracao de cada interrupcao
         for buffer in buffers:
@@ -480,50 +529,24 @@ def coletarStallsDuracoes(conecta):
         
         durationSum=0
         
-        j=0
-        average_bitrate_maior = 0
         #enqto a soma dos n segmentos for menor ou igual ao tempo de sessao sem interrupcao e j for menor que o tamanho do vetor segmentos
         #ler outros segmentos e continuar a somar, no final determinar o maior e o menor 
-        l = 0
-        while(l < len(segmentos)):    
-            bitrateSum=0
-            soma_duration_segl = 0
-            print l
-            while((soma_duration_segl <= deltaTimeSessionBuffer) & (j < len(segmentos))):
-                #print "j: "+str(j)
-                duration_segment = float(segmentos[j][4])
-                bitrate = float(segmentos[j][6]) + 100 #kbps
-                
-                soma_duration_segl += duration_segment
-                bitrateSum += bitrate * duration_segment
-                #print "soma duracao: "+str(soma_duration_segi)
-                j += 1
-            
-                
-            if (j == len(segmentos)):
-                l = j
-            else:
-                l += 1
-            print l, j   
-            print bitrateSum,deltaTimeSessionBuffer
-            averageBitRate = bitrateSum/timeSessionBuffer 
-            print averageBitRate       
-            if(averageBitRate > average_bitrate_maior):
-                average_bitrate_maior = averageBitRate
-
-        averageBitRateResultSum += average_bitrate_maior
+        inicio = datetime.strptime(segmentos[0][1], '%Y-%m-%dT%H:%M:%S.%fZ')
+        fim = datetime.strptime(segmentos[len(segmentos) - 1][2], '%Y-%m-%dT%H:%M:%S.%fZ') 
+        deltaInicioFim = fim - inicio
+        tempoSessao = deltaInicioFim.total_seconds()
+        print "Tempo de Sessao Individual do Download: %s"%tempoSessao
+        
+        
         
         br_sum = 0 
         
         for seg in segmentos:
-            start_time_seg = datetime.strptime(seg[1], '%Y-%m-%dT%H:%M:%S.%fZ')
-            finish_time_seg = datetime.strptime(seg[2], '%Y-%m-%dT%H:%M:%S.%fZ')
-            if start_time_seg >= inicial_time and finish_time_seg <= final_time:
-                br = float(seg[6]) + 100
-                br_sum += br * float(seg[4])
-                durationSum += float(seg[4])
+            br = float(seg[6]) + 100
+            br_sum += br * float(seg[4])
+            durationSum += float(seg[4])
 
-        abr = br_sum/timeSessionSeg
+        abr = br_sum/tempoSessaoBuffer #timeSessionSeg
         abr_sum += abr
         
         print "ID: %d"%int(executions[i]) 
@@ -533,20 +556,17 @@ def coletarStallsDuracoes(conecta):
         print "Duracao Total dos segmentos: "+ str(durationSum)
         print "Duracao Media das Interrupcoes: %f"%average_duration_rebuffer_video
         print "Qtde de segmentos: %d"%len(segmentos) 
-        print "Bitrate Average Maior kbps: "+ str(average_bitrate_maior)
         print "Bitrate Average kbps: "+ str(abr)
 
         sum_stall_count += rebuffer_video_count
         average_stalls_durations += average_duration_rebuffer_video
-        averageBitRateResultMedia = averageBitRateResultSum/len(executions)
-        abrmedia = abr_sum/len(executions)
+    
     print "==================================="
-    print "Tempo de Sessao baseado no Download: "+str(timeSessionSeg)
-    print "Tempo de Sessao baseado no Buffer: "+str(timeSessionBuffer)
+    print "Tempo de Sessao no corte baseado no Download: "+str(timeSessionSeg)
+    print "Tempo de Sessao no corte baseado no Buffer: "+str(timeSessionBuffer)
     print "Qtde Media de Interrupcoes: %f"%(float(sum_stall_count)/len(executions))
     print "Media de Duracao das Interrupcoes: %f"%(float(average_stalls_durations)/len(executions))    
-    print "Media BitRate: "+ str(averageBitRateResultMedia)
-    print "Media BitRate abr: "+ str(abrmedia)
+    print "Media BitRate abr: "+ str(abr_sum/len(executions))
 
 '''Funcao para coletar a instabilidade por execucao e a media entre as execucoes informadas'''        
 def coletarInst(conecta):
