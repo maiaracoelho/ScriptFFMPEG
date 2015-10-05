@@ -40,7 +40,7 @@ for txtLogsBwFile in txtLogsBwFiles:
     gplot('set xtics 50')
     gplot('set ytics 10')
     gplot('set grid ytics')
-    gplot('set xrange [0:720]')
+    gplot('set xrange [0:800]')
     gplot('set yrange [0:50]')
     gplot('set t png')
     gplot('set o "'+path_graphs_buffer+'/'+title+'.png"')
@@ -56,15 +56,15 @@ for txtLogsBwFile in txtLogsBwFiles:
     gplot.title("'"+title+"'")
     gplot.xlabel('Tempo (s)')
     gplot.ylabel('Largura de Banda (kbps)')
-    gplot('set ytics ( 460, 1660, 2060, 2460, 2860, 3260, 3660, 4000, 5000)')
+    gplot('set ytics ( 200, 1660, 2060, 2460, 2860, 3260, 3660, 4000)')
     gplot('set xtics 50')
-    gplot('set xrange [0:720]')
-    gplot('set yrange [200:5000]')
+    gplot('set xrange [0:800]')
+    gplot('set yrange [100:4500]')
     gplot('set xtics nomirror rotate by -45')
 
     gplot('set t png')
     gplot('set o "'+path_graphs_tx+'/'+title+'.png"')
-    gplot.plot("'"+txtLogsBwFilewithPath+"' u 1:2 w steps t 'Largura de Banda (kbps)', '"+txtLogsBrFilewithPath+"'u 1:2 w lp t 'Taxa de bits (kbps)'")
+    gplot.plot("'"+txtLogsBwFilewithPath+"' u 1:2 w steps t 'Largura de Banda (kbps)', '"+txtLogsBrFilewithPath+"'u 1:2 w p t 'Taxa de Bits (kbps)'")
     
 
 

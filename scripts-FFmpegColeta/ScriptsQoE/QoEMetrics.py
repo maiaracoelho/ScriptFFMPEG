@@ -244,7 +244,7 @@ def definirTempoInicialExecution(conecta, vetor):
 def coletarTrocasAmplitudes(conecta):
     executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
     executions = map(int, executions.split())
-    inicial_time = definirTempoInicialAvaliacao(conecta, executions)
+    inicial_time = definirTempoInicialExecution(conecta, executions)
     print "Tempo Inicial: %s"%inicial_time
     final_time = definirTempoFinalAvaliacao(conecta, executions)
     print "Tempo Final: %s"%final_time
@@ -489,15 +489,14 @@ def coletarStallsDuracoes(conecta):
             time_buffer = datetime.strptime(buffer[1], '%Y-%m-%dT%H:%M:%S.%fZ')
             bufferlevelvideo = float(buffer[2])
             
-            if time_buffer >= inicial_time_buffer and time_buffer <= final_time_buffer:
                 
-                if bufferlevelvideo <= BMin and bufferlevelvideo < bufferlevel_video_last: 
+            if bufferlevelvideo <= BMin and bufferlevelvideo < bufferlevel_video_last: 
                     if rebuffer_video_flag == True:
                         time1 = time_buffer
                         deltaTime1 =  time1 - inicial_time
                         deltaTime1 = deltaTime1.total_seconds()
                         rebuffer_video_flag = False
-                elif bufferlevelvideo > BMin and bufferlevelvideo > bufferlevel_video_last:
+            elif bufferlevelvideo > BMin and bufferlevelvideo > bufferlevel_video_last:
                     if rebuffer_video_flag == False:
                         time2 = time_buffer
                         deltaTime2 =  time2 - inicial_time
@@ -573,9 +572,9 @@ def coletarInst(conecta):
     
     executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
     executions = map(int, executions.split())
-    inicial_time = definirTempoInicialAvaliacao(conecta, executions)
+    inicial_time = definirTempoInicialExecution(conecta, executions)
     print "Tempo Inicial: %s"%inicial_time
-    final_time = definirTempoFinalAvaliacao(conecta, executions)
+    final_time = definirTempoFinalBuffer(conecta, executions)
     print "Tempo Final: %s"%final_time
     
     cursor = conecta.cursor()
@@ -634,6 +633,51 @@ def coletarInst(conecta):
     print "==================================="
     print "Instabilidade Media: %f"%(float(instability_average_sum)/len(executions))
     
+'''Funcao para coletar a qtde de interrupcoes, a duracao media das interrupcoes por execucao e a media entre as execucoes informadas'''        
+def coletarPopularity(conecta):
+   
+    executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
+    executions = map(int, executions.split())
+    #Corte para tempo de sessao total
+    inicial_time = definirTempoInicialExecution(conecta, executions)
+    print "Tempo Inicial: %s"%inicial_time
+    final_time = definirTempoFinalBuffer(conecta, executions)
+    print "Tempo Final: %s"%final_time
+
+    cursor = conecta.cursor()
+    
+    for i in range(0,len(executions)):
+        sql2="SELECT time, start_time, finish_time, size_seg, duration, quality, bandwidth FROM dash_throughseg WHERE fk_execution=%d"%int(executions[i])
+
+        try:
+            cursor.execute(sql2)
+            segmentos = cursor.fetchall()
+            
+        except MySQLdb.Error, e:
+            print "Erro: Banco nao encontrado",e
+            menu = raw_input()
+            os.system("clear")
+            menu()
+            
+        bitrates_list=[]
+        dict_bitrates={}
+        for seg in segmentos:            
+            start_time_seg = datetime.strptime(seg[1], '%Y-%m-%dT%H:%M:%S.%fZ')
+            finish_time_seg = datetime.strptime(seg[2], '%Y-%m-%dT%H:%M:%S.%fZ')
+            if start_time_seg >= inicial_time and finish_time_seg <= final_time:
+                
+                bitrate_parameter = float(seg[6]) + 100
+                bitrates_list.append(bitrate_parameter)
+
+       #Pegar a popularidade de cada taxa
+        dict_bitrates = dict((i,float(bitrates_list.count(i))/float(len(bitrates_list))*100) for i in bitrates_list)
+        dict_bitrates_sorted = sorted(dict_bitrates.items(), key=itemgetter(0))
+        
+        print dict_bitrates_sorted 
+                    
+
+    print "==================================="
+    
            
 #-------Programa Principal------    
 def menu():
@@ -642,7 +686,7 @@ def menu():
     print "==================================="
     print "======= QoE Metrics ========"
     print "==================================="
-    opcao = raw_input("Escolha opcao desejada\n\n[1] - Coletar Trocas e Amplitudes\n[2] - Coletar Stalls e Duracoes de Stalls\n[3] - Coletar Taxa media e Justica\n[4] - Coletar Instabilidade\n[5] - Gerar Graficos Gerais\n[6] - Sair")
+    opcao = raw_input("Escolha opcao desejada\n\n[1] - Coletar Trocas e Amplitudes\n[2] - Coletar Stalls e Duracoes de Stalls\n[3] - Coletar Taxa media e Justica\n[4] - Coletar Instabilidade\n[5]- Coletar Popularidade\n[6] - Gerar Graficos Gerais\n[7] - Sair")
  
     try:
         opcao = int(opcao)
@@ -675,9 +719,13 @@ def menu():
  
     elif opcao == 5:
         conecta = conectaBanco()
+        coletarPopularity(conecta)
+        
+    elif opcao == 6:
+        conecta = conectaBanco()
         gerarGraficos(conecta)
  
-    elif opcao == 6:
+    elif opcao == 7:
         sys.exit()
 
 if __name__=='__main__':

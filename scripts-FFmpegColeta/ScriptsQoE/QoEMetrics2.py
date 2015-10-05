@@ -207,7 +207,7 @@ def definirTempoInicialExecution(conecta, vetor):
     try:
          cursor.execute(sql)
          execution = cursor.fetchone()
-              
+         
          start_time = datetime.strptime(execution[1], '%Y-%m-%dT%H:%M:%S.%fZ') 
          #print"\n----------------------------\n"
          #print " ID: %s\n StartTime: %s"%(int(vetor[0]), start_time)
@@ -284,6 +284,7 @@ def definirTempoFinalExecution(conecta, executions):
             menu()
             
     return menor_time_final
+
 
 '''Funcao para coletar a qtde de trocas a media de amplitude por execucao e a media entre as execucoes informadas'''        
 def coletarTrocasAmplitudes(conecta):
@@ -595,6 +596,53 @@ def coletarStallsDuracoes(conecta):
     print "Media de Duracao das Interrupcoes: %f"%(float(average_stalls_durations)/len(executions))    
     print "Media BitRate abr: "+ str(abrmedia)
 
+
+'''Funcao para coletar a qtde de interrupcoes, a duracao media das interrupcoes por execucao e a media entre as execucoes informadas'''        
+def coletarPopularity(conecta):
+   
+    executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
+    executions = map(int, executions.split())
+    #Corte para tempo de sessao total
+    inicial_time = definirTempoInicialExecution(conecta, executions)
+    final_time = definirTempoFinalExecution(conecta, executions)
+    timeSession =  final_time - inicial_time
+    timeSession = timeSession.total_seconds()
+    print "Tempo da Sessao: %s"%timeSession
+
+    cursor = conecta.cursor()
+    
+    for i in range(0,len(executions)):
+        sql2="SELECT time, start_time, finish_time, size_seg, duration, quality, bitrate FROM dash_throughseg WHERE fk_execution=%d"%int(executions[i])
+
+        try:
+            cursor.execute(sql2)
+            segmentos = cursor.fetchall()
+            
+        except MySQLdb.Error, e:
+            print "Erro: Banco nao encontrado",e
+            menu = raw_input()
+            os.system("clear")
+            menu()
+            
+        bitrates_list=[]
+        dict_bitrates={}
+        for seg in segmentos:            
+            start_time_seg = datetime.strptime(seg[1], '%Y-%m-%dT%H:%M:%S.%fZ')
+            finish_time_seg = datetime.strptime(seg[2], '%Y-%m-%dT%H:%M:%S.%fZ')
+            if start_time_seg >= inicial_time and finish_time_seg <= final_time:
+                
+                bitrate_parameter = float(seg[6]) + 100
+                bitrates_list.append(bitrate_parameter)
+
+       #Pegar a popularidade de cada taxa
+        dict_bitrates = dict((i,float(bitrates_list.count(i))/float(len(bitrates_list))*100) for i in bitrates_list)
+        dict_bitrates_sorted = sorted(dict_bitrates.items(), key=itemgetter(0))
+        
+        print dict_bitrates_sorted 
+                    
+
+    print "==================================="
+    
 '''Funcao para coletar a instabilidade por execucao e a media entre as execucoes informadas'''        
 def coletarInst(conecta):
     
@@ -671,11 +719,11 @@ def menu():
     print "==================================="
     print "======= QoE Metrics ========"
     print "==================================="
-    opcao = raw_input("Escolha opcao desejada\n\n[1] - Coletar Trocas e Amplitudes\n[2] - Coletar Stalls e Duracoes de Stalls\n[3] - Coletar Taxa media e Justica\n[4] - Coletar Instabilidade\n[5] - Gerar Graficos Gerais\n[6] - Sair")
+    opcao = raw_input("Escolha opcao desejada\n\n[1] - Coletar Trocas e Amplitudes\n[2] - Coletar Stalls e Duracoes de Stalls\n[3] - Coletar Taxa media e Justica\n[4] - Coletar Instabilidade\n[5] - Coletar Popularidade\n[6]- Gerar Graficos Gerais\n[7] - Sair")
  
     try:
         opcao = int(opcao)
-        if opcao<1 or opcao>6:
+        if opcao<1 or opcao>7:
             os.system("clear");
             print "OPCAO INVALIDA: Verifique o valor digitado"
             time.sleep(2)
@@ -704,9 +752,13 @@ def menu():
  
     elif opcao == 5:
         conecta = conectaBanco()
+        coletarPopularity(conecta)
+    
+    elif opcao == 6:
+        conecta = conectaBanco()
         gerarGraficos(conecta)
  
-    elif opcao == 6:
+    elif opcao == 7:
         sys.exit()
 
 if __name__=='__main__':
