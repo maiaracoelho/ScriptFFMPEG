@@ -1,1 +1,1 @@
-/home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos-21-09-15 logbw12_atc_cenario3_gran400_fps30.txt 25 
+/home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos_nov2015 log16_atc_cenario3_gran160_fps30.txt 33 

@@ -15,7 +15,7 @@ from operator import itemgetter
  
 #Conectar ao banco
 try:
-    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db')
+    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db5')
 except:
     print "Error Connection"
 

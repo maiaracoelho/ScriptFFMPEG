@@ -15,7 +15,7 @@ def conectaBanco():
     HOST = "localhost"
     USER = "root"
     PASSWD = "mysql"
-    BANCO = "dash_db2"
+    BANCO = "dash_db5"
  
     try:
         conecta = MySQLdb.connect(HOST, USER, PASSWD)
@@ -438,8 +438,9 @@ def coletarTaxaJustica(conecta):
                 segCount += 1
 
         averageBitRateResult = bitrateSum/deltaTime     
-        gotResult = bitratesSum/durationSum     
-
+        #averageBitRateResult = bitrateSum/durationSum     
+        gotResult = averageBitRateResult     
+        
         averageBitRateResultSum += averageBitRateResult    
   
         xi = float(gotResult)/float(expectResult)
@@ -533,33 +534,35 @@ def coletarStallsDuracoes(conecta):
         for buffer in buffers:
             time_buffer = datetime.strptime(buffer[1], '%Y-%m-%dT%H:%M:%S.%fZ')
             bufferlevelvideo = float(buffer[2])
+            
+            if time_buffer >= inicial_time and time_buffer <= final_time:
+                               
+                if bufferlevelvideo <= BMin and bufferlevelvideo < bufferlevel_video_last: 
+                        if rebuffer_video_flag == True:
+                            time1 = time_buffer
+                            deltaTime1 =  time1 - inicial_time
+                            deltaTime1 = deltaTime1.total_seconds()
+                            rebuffer_video_flag = False
+                elif bufferlevelvideo > BMin and bufferlevelvideo > bufferlevel_video_last:
+                        if rebuffer_video_flag == False:
+                            time2 = time_buffer
+                            deltaTime2 =  time2 - inicial_time
+                            deltaTime2 = deltaTime2.total_seconds()
+                            rebuffer_video_flag = True
+                        
+                            deltaTime = time2 - time1
+                            deltaTime = deltaTime.total_seconds()
+                                            
+                            rebuffer_video_count += 1
+                            durations_video = [rebuffer_video_count, deltaTime]
+                            durations_video_list.append(durations_video)
                             
-            if bufferlevelvideo <= BMin and bufferlevelvideo < bufferlevel_video_last: 
-                    if rebuffer_video_flag == True:
-                        time1 = time_buffer
-                        deltaTime1 =  time1 - inicial_time
-                        deltaTime1 = deltaTime1.total_seconds()
-                        rebuffer_video_flag = False
-            elif bufferlevelvideo > BMin and bufferlevelvideo > bufferlevel_video_last:
-                    if rebuffer_video_flag == False:
-                        time2 = time_buffer
-                        deltaTime2 =  time2 - inicial_time
-                        deltaTime2 = deltaTime2.total_seconds()
-                        rebuffer_video_flag = True
-                    
-                        deltaTime = time2 - time1
-                        deltaTime = deltaTime.total_seconds()
-                                        
-                        rebuffer_video_count += 1
-                        durations_video = [rebuffer_video_count, deltaTime]
-                        durations_video_list.append(durations_video)
-                        
-                        sum_video_times += deltaTime
-                        
-                        #print "Paradas "+str(rebuffer_video_count) +" "+ str(deltaTime)
-                        #print "Soma dos Tempos"+str(sum_video_times)
-                        
-            bufferlevel_video_last = bufferlevelvideo
+                            sum_video_times += deltaTime
+                            
+                            #print "Paradas "+str(rebuffer_video_count) +" "+ str(deltaTime)
+                            #print "Soma dos Tempos"+str(sum_video_times)
+                            
+                bufferlevel_video_last = bufferlevelvideo
             
         #Media das duracoes das rebufferizacoes de video      
         if(len(durations_video_list) != 0):
@@ -574,7 +577,7 @@ def coletarStallsDuracoes(conecta):
             br_sum += br * float(seg[4])
             duration_sum += float(seg[4])
 
-        abr = br_sum/timeSessionInd 
+        abr = br_sum/timeSession 
         #abr = br_sum/timeSession 
         #abr = br_sum/(timeSession - sum_video_times)
 

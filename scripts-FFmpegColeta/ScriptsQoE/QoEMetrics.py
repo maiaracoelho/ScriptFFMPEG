@@ -15,7 +15,7 @@ def conectaBanco():
     HOST = "localhost"
     USER = "root"
     PASSWD = "mysql"
-    BANCO = "dash_db"
+    BANCO = "dash_db1"
  
     try:
         conecta = MySQLdb.connect(HOST, USER, PASSWD)
@@ -429,11 +429,11 @@ def coletarStallsDuracoes(conecta):
     executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
     executions = map(int, executions.split())
     #Corte para tempo de sessao baseado nos segmentos, nao considera interrupcoes
-    inicial_time = definirTempoInicialAvaliacao(conecta, executions)
-    final_time = definirTempoFinalAvaliacao(conecta, executions)
+    inicial_time = definirTempoInicialExecution(conecta, executions)
+    final_time = definirTempoFinalBuffer(conecta, executions)
     timeSessionSeg =  final_time - inicial_time
     timeSessionSeg = timeSessionSeg.total_seconds()
-    print "Tempo de sessao no corte de download: %s"%timeSessionSeg
+    print "Tempo de sessao total no corte : %s"%timeSessionSeg
 
     #Corte para tempo de sessao baseado no buffer, considera interrupcoes
     inicial_time_buffer = definirTempoInicialBuffer(conecta, executions)
@@ -545,7 +545,7 @@ def coletarStallsDuracoes(conecta):
             br_sum += br * float(seg[4])
             durationSum += float(seg[4])
 
-        abr = br_sum/tempoSessaoBuffer #timeSessionSeg
+        abr = br_sum/timeSessionSeg #timeSessionSeg
         abr_sum += abr
         
         print "ID: %d"%int(executions[i]) 

@@ -12,14 +12,14 @@ import string
 
 #Conectar ao banco
 try:
-    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db')
+    connection = MySQLdb.connect(host='localhost', user='root', passwd='mysql',db='dash_db1')
 except:
     print "Error Connection"
 
 cursor = connection.cursor()
   
 try:
-    connection.select_db("dash_db")
+    connection.select_db("dash_db1")
 except:
     print "Error DB Selection"
 
