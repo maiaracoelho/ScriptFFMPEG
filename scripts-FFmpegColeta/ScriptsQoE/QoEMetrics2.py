@@ -612,21 +612,28 @@ def coletarPopularity(conecta):
     timeSession = timeSession.total_seconds()
     print "Tempo da Sessao: %s"%timeSession
 
-    cursor = conecta.cursor()
-    
+    cursor1 = conecta.cursor()       
+    cursor2 = conecta.cursor()       
+
     for i in range(0,len(executions)):
+        
+        sql1="SELECT * FROM dash_execution WHERE id=%d"%int(executions[i])
         sql2="SELECT time, start_time, finish_time, size_seg, duration, quality, bitrate FROM dash_throughseg WHERE fk_execution=%d"%int(executions[i])
 
         try:
-            cursor.execute(sql2)
-            segmentos = cursor.fetchall()
+            cursor1.execute(sql1)
+            cursor2.execute(sql2)
+            exect = cursor1.fetchone()
+            segmentos = cursor2.fetchall()
+
+            print exect
             
         except MySQLdb.Error, e:
             print "Erro: Banco nao encontrado",e
             menu = raw_input()
             os.system("clear")
             menu()
-            
+                
         bitrates_list=[]
         dict_bitrates={}
         for seg in segmentos:            
@@ -641,6 +648,7 @@ def coletarPopularity(conecta):
         dict_bitrates = dict((i,float(bitrates_list.count(i))/float(len(bitrates_list))*100) for i in bitrates_list)
         dict_bitrates_sorted = sorted(dict_bitrates.items(), key=itemgetter(0))
         
+        print executions[i] 
         print dict_bitrates_sorted 
                     
 
