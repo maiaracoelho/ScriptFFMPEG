@@ -8,7 +8,7 @@ def unfairnessToFairness():
     
     for i in range(0,len(unfairnessNumbers)):
         unfairnessNumber = unfairnessNumbers[i]
-        fairnessNumber = (unfairnessNumber + 1.0)*(unfairnessNumber + 1.0)
+        fairnessNumber = 1.0 - (unfairnessNumber*unfairnessNumber)
         print "FairnessNumber of %f: %f"%(unfairnessNumbers[i], fairnessNumber)
         
         
