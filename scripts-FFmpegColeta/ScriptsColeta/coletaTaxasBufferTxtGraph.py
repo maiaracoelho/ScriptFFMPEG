@@ -1,4 +1,4 @@
-﻿'''
+'''
 Created on 04/02/2015
 
 @author: dash
@@ -35,17 +35,17 @@ for txtLogsBwFile in txtLogsBwFiles:
     title = txtLogsBwFile.split(".")
     title = title[0]
     gplot.title("'"+title+"'")
-    gplot.xlabel('Tempo (s)')
-    gplot.ylabel('Ocupação do Buffer (s)')
+    #gplot.xlabel('Tempo (s)')
+    gplot.ylabel('Buffer Level (s)')
     gplot('set xtics 50')
     gplot('set ytics 10')
     gplot('set grid ytics')
     gplot('set xrange [0:800]')
-    gplot('set yrange [0:60]')
+    gplot('set yrange [0:50]')
     gplot('set t png')
     gplot('set o "'+path_graphs_buffer+'/'+title+'.png"')
-    gplot.plot("'"+txtLogsBfFilewithPath+"' u 1:2 w lines t 'Ocupação do Buffer (s)'")
-    
+    gplot.plot("'"+txtLogsBfFilewithPath+"' u 1:2 w lines t 'Buffer Level (s)'")
+
 for txtLogsBwFile in txtLogsBwFiles:
     txtLogsBwFilewithPath = path_logsbw_txt + "/" + txtLogsBwFile
     txtLogsBrFilewithPath = path_video_txt + "/" + txtLogsBwFile
@@ -54,8 +54,8 @@ for txtLogsBwFile in txtLogsBwFiles:
     title = txtLogsBwFile.split(".")
     title = title[0]
     gplot.title("'"+title+"'")
-    gplot.xlabel('Tempo (s)')
-    gplot.ylabel('Largura de Banda (kbps)')
+    gplot.xlabel('Time (s)')
+    gplot.ylabel('Bandwidth (kb/s)')
     gplot('set ytics ( 300, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 4000)')
     gplot('set xtics 50')
     gplot('set xrange [0:800]')
@@ -64,8 +64,8 @@ for txtLogsBwFile in txtLogsBwFiles:
 
     gplot('set t png')
     gplot('set o "'+path_graphs_tx+'/'+title+'.png"')
-    gplot.plot("'"+txtLogsBwFilewithPath+"' u 1:2 w steps t 'Largura de Banda (kbps)', '"+txtLogsBrFilewithPath+"'u 1:2 w p t 'Taxa de Bits (kbps)'")
-    
+    gplot.plot("'"+txtLogsBwFilewithPath+"' u 1:2 w steps t 'Bandwidth Available (kb/s)', '"+txtLogsBrFilewithPath+"'u 1:2 w p t 'Bit Rate (kb/s)'")
+
 
 
 '''system('set ytics ( 200000, 1600000, 2200000, 2800000, 3400000, 4000000, 5000000)')
