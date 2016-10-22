@@ -15,7 +15,7 @@ def conectaBanco():
     HOST = "localhost"
     USER = "root"
     PASSWD = "mysql"
-    BANCO = "dash_db5"
+    BANCO = "dash_db2"
  
     try:
         conecta = MySQLdb.connect(HOST, USER, PASSWD)
