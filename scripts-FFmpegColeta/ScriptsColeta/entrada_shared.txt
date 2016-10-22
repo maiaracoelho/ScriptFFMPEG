@@ -1,1 +1,1 @@
-/home/dash/Dropbox/Pesquisas_Mestrado/experimentos/experimentos-25-04-15 logbw10_exec55.txt logbw10_exec55.txt logbw10_exec57.txt logbw10_exec60.txt 55 57 60 
+/home/dash/Dropbox/mestrado_pesquisa/experimentos/experimentos-25-04-15 logbw10_exec55.txt logbw10_exec55.txt logbw10_exec57.txt logbw10_exec60.txt 55 57 60 
