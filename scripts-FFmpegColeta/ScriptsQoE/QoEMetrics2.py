@@ -385,10 +385,9 @@ def coletarTrocasAmplitudes(conecta):
     print "AmplitudeAverage Neg: %f"%(float(average_amplitudes_neg)/len(executions))
 
 '''Funcao para coletar a taxa media por execucao, a media dessas medias e a justica entre as execucoes informadas'''        
-def coletarTaxaJustica(conecta):
+def coletarTaxaJustica(conecta, executions):
     
-    executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
-    executions = map(int, executions.split())
+    
     inicial_time = definirTempoInicialExecution(conecta, executions)
     final_time = definirTempoFinalExecution(conecta, executions)
     expectResult = str(raw_input("\nDigite o recurso esperado: "))
@@ -472,11 +471,9 @@ def coletarTaxaJustica(conecta):
 
 
 '''Funcao para coletar a qtde de interrupcoes, a duracao media das interrupcoes por execucao e a media entre as execucoes informadas'''        
-def coletarStallsDuracoes(conecta):
+def coletarStallsDuracoes(conecta, executions):
    
-    executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
-    executions = map(int, executions.split())
-    #Corte para tempo de sessao total
+    
     inicial_time = definirTempoInicialExecution(conecta, executions)
     final_time = definirTempoFinalExecution(conecta, executions)
     timeSession =  final_time - inicial_time
@@ -601,10 +598,9 @@ def coletarStallsDuracoes(conecta):
 
 
 '''Funcao para coletar a qtde de interrupcoes, a duracao media das interrupcoes por execucao e a media entre as execucoes informadas'''        
-def coletarPopularity(conecta):
+def coletarPopularity(conecta, executions):
    
-    executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
-    executions = map(int, executions.split())
+    
     #Corte para tempo de sessao total
     inicial_time = definirTempoInicialExecution(conecta, executions)
     final_time = definirTempoFinalExecution(conecta, executions)
@@ -655,10 +651,9 @@ def coletarPopularity(conecta):
     print "==================================="
     
 '''Funcao para coletar a instabilidade por execucao e a media entre as execucoes informadas'''        
-def coletarInst(conecta):
+def coletarInst(conecta, executions):
     
-    executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
-    executions = map(int, executions.split())
+    
     #Corte para tempo de sessao total
     inicial_time = definirTempoInicialExecution(conecta, executions)
     final_time = definirTempoFinalExecution(conecta, executions)
@@ -747,11 +742,17 @@ def menu():
  
     if opcao == 1:
         conecta = conectaBanco()
-        coletarTrocasAmplitudes(conecta)
- 
+        executions = str(raw_input("\nDigite o(s) Id(s) da(s) execucao(oes) separados por espaco: "))
+        executions = map(int, executions.split())
+        #coletarTrocasAmplitudes(conecta)
+        coletarTaxaJustica(conecta, executions)
+        coletarStallsDuracoes(conecta, executions)
+        coletarInst(conecta, executions)
+        coletarPopularity(conecta, executions)
+        
     elif opcao == 2:
         conecta = conectaBanco()
-        coletarStallsDuracoes(conecta)
+        
  
     elif opcao == 3:
         conecta = conectaBanco()
