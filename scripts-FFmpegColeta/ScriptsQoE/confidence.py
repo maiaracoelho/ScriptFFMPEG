@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from operator import itemgetter
 from math import sqrt
 
+CONFIDENCE_COEFFICIENT = 1.96 #para um intervalo de 95%
+
 
 def average(numbers):
     
@@ -30,9 +32,13 @@ def stand_deviation(av, numbers):
         sum += sub_pot
         count += 1
     sd = sum/count
-    print sd
     return sqrt(sd)
         
+def error_margin(sd, n):
+        
+    div = sd/sqrt(n)
+    return CONFIDENCE_COEFFICIENT * div
+    
 
 #-------Programa Principal------    
 def menu():
@@ -42,9 +48,17 @@ def menu():
     av = average(numbers)
     
     sd = stand_deviation(av, numbers)
-
+    
+    se = error_margin(sd, len(numbers))
+    
     print "average is: %f"%av
     print "stand_deviation is: %f"%sd
+    print "Margin Of Error is: %f"%se
+    print "Min Average: %f"%(av-se)
+    print "Max Average: %f"%(av+se)
+    
+    
+    
     
 if __name__=='__main__':
     menu()
