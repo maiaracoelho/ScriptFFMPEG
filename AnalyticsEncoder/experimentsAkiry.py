@@ -93,17 +93,17 @@ def generateArqToTxtAll(listEncoder):
             mover_inicial_time = float(dictItem["mover_inicial_time"])
             mover_final_time = float(dictItem["mover_final_time"])
             delta_mover = mover_final_time - mover_inicial_time
-            delta_mover = delta_mover / 60
+            delta_mover = delta_mover
             transcoder_inicial_time = float(dictItem["transcoder_inicial_time"])
             transcoder_final_time = float(dictItem["transcoder_final_time"])
             delta_transcoder = transcoder_final_time - transcoder_inicial_time
-            delta_transcoder = delta_transcoder / 60
+            delta_transcoder = delta_transcoder
             sendToS3_inicial_time = float(dictItem["sendToS3_inicial_time"])
             sendToS3_final_time = float(dictItem["sendToS3_final_time"])
             delta_upload = sendToS3_final_time - sendToS3_inicial_time
-            delta_upload = delta_upload / 60
+            delta_upload = delta_upload
             filesize = float(dictItem["filesize"])
-            filesize = filesize * (10 ^ (-6))
+            filesize = filesize/1000
 
             sum_mover_time += delta_mover
             sum_transcoder_time += delta_transcoder
