@@ -5,25 +5,9 @@ import json
 import ast
 from operator import itemgetter
 from itertools import izip
+import os
 
-uri = "http://encoding.akirymedia.com:9080/api/v1.0"
-token = 'OGVjYTNhNzg2YzRiOWQ3YTkyYzA3N2QyNGIxODliMjEyYWNkOGEyYWExMDRjOGViZTYzMzVkNzczNDVlODYzMg=='
-pathArqs = "/home/maiara/Dropbox/DocumentacaoEmpresa/experimentos"
-
-def getLogs(date=None):
-
-            headers = {
-                       'Authorization': 'Bearer ' + token
-            }
-            url = uri + '/logs/' + str(date)
-
-            http = httplib2.Http(disable_ssl_certificate_validation=True)
-            headers, content = http.request(url, "GET", headers=headers)
-
-            if headers.status == 200:
-                return json.loads(content)
-            else:
-                return None
+pathArqs = "/home/dash/Dropbox/DocumentacaoEmpresa/experimentos/logsTvUfam"
 
 
 def fromListToList(logsList):
@@ -93,17 +77,17 @@ def generateArqToTxtAll(listEncoder):
             mover_inicial_time = float(dictItem["mover_inicial_time"])
             mover_final_time = float(dictItem["mover_final_time"])
             delta_mover = mover_final_time - mover_inicial_time
-            delta_mover = delta_mover/60.0
+            delta_mover = delta_mover
             transcoder_inicial_time = float(dictItem["transcoder_inicial_time"])
             transcoder_final_time = float(dictItem["transcoder_final_time"])
             delta_transcoder = transcoder_final_time - transcoder_inicial_time
-            delta_transcoder = delta_transcoder/60.0
+            delta_transcoder = delta_transcoder
             sendToS3_inicial_time = float(dictItem["sendToS3_inicial_time"])
             sendToS3_final_time = float(dictItem["sendToS3_final_time"])
             delta_upload = sendToS3_final_time - sendToS3_inicial_time
-            delta_upload = delta_upload/60.0
+            delta_upload = delta_upload
             filesize = float(dictItem["filesize"])
-            filesize = filesize * 10**(-6)
+            filesize = filesize/1000
 
             sum_mover_time += delta_mover
             sum_transcoder_time += delta_transcoder
@@ -127,18 +111,27 @@ def generateArqToTxtAll(listEncoder):
 
 def main():
 
-    dates = str(raw_input("Entre com as datas  no formato dd-mm-yyyy separadas por espaco: "))
-    dates = list(dates.split(" "))
-    logsList = []
+    filenames = str(raw_input("Entre com as datas dos logs no formato : "))
+    filenames = list(filenames.split(" "))
+    dictData = {}
 
-    for date in dates:
-        logsListDay = ast.literal_eval(json.dumps(getLogs(date=date)))
-        logsList.append(logsListDay)
+    for filename in filenames:
+        file = os.path.join(pathArqs, filename+".log")
+        arq = open(file, 'r')
+        linhas = arq.readlines()   
+        for linha in linhas:
+            linha = linha.split(":") 
+            del linha[0:3]                     
+            linha = ':'.join(linha)
+            print linha[0]
+            dictData[0] = json.loads(linha)
+            
+                #dictEncoder = fromListToList(logsList)
+                #listEncoder = sorted(dictEncoder.iteritems(), key=lambda (x, y): y['filesize'])
+                #generateArqToTxtAll(listEncoder)
+        
 
-    if not logsList is None:
-        dictEncoder = fromListToList(logsList)
-        listEncoder = sorted(dictEncoder.iteritems(), key=lambda (x, y): y['filesize'])
-        generateArqToTxtAll(listEncoder)
+    
 
 if __name__ == '__main__':
     main()
