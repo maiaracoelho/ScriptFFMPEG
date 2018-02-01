@@ -10,44 +10,55 @@ import os
 pathArqs = "/home/dash/Dropbox/DocumentacaoEmpresa/experimentos/logsTvUfam"
 
 
-def fromListToList(logsList):
+def counterAccessByDay(linhas):
 
-    dictLogs = {}
+    logs = []
+    mobileAccessDay = 0
+    desktopAccessDay = 0 
 
-    for i in range(0,len(logsList)):
-        for j in range(0,len(logsList[i])):
-            log = logsList[i][j]
+    for linha in linhas:
+            linha = linha.split(":") 
+            del linha[0:3]                     
+            linha = ':'.join(linha)
+            #linha = ast.literal_eval(linha)
+            d = json.loads(linha)
+            if "Fingerprint" in d.keys():
+                print linha
+                
+                dictFingerprint = list(d["Fingerprint"])[0]
+                
+                dictTimeline = dictFingerprint["timeline"]
+                if not "tvufam" in dictTimeline["appId"]:
+                    continue
+                if dictFingerprint["deviceType"] == "mobile":
+                    mobileAccessDay+=1
+                else:
+                    desktopAccessDay+=1
+                
+    return mobileAccessDay, desktopAccessDay
 
-            jobId = log["object"]["timeline"]["job"]
-            category = log["category"]
-            event = log["event"]
-            time = log["object"]["timeline"]["timestamp"]
-            filesize = None
-            if event == "download_completed":
-                filesize = log["filesize"]
 
-            #dictLog={jobId:dict={"mover_inicial_time","mover_final_time","transcode_inicial_time","transcode_final_time","sendToS3_inicial_time", "sendToS3_final_time", "filesize"
-            if not dictLogs.has_key(jobId):
-                dictLogs[jobId] = {"mover_inicial_time": None, "mover_final_time": None, "transcoder_inicial_time": None, "transcoder_final_time": None, "sendToS3_inicial_time": None, "sendToS3_final_time": None, "filesize": None}
+def generateCountsDevice(linhas, dict):
 
-            if category == "mover":
-                if event == "download_started":
-                    dictLogs[jobId]["mover_inicial_time"] = time
-                if event == "download_completed":
-                    dictLogs[jobId]["mover_final_time"] = time
-                    dictLogs[jobId]["filesize"] = filesize
-            if category == "transcoder":
-                if event == "transcode_started":
-                    dictLogs[jobId]["transcoder_inicial_time"] = time
-                if event == "transcode_completed":
-                    dictLogs[jobId]["transcoder_final_time"] = time
-            if category == "sendToS3":
-                if event == "sendS3_started":
-                    dictLogs[jobId]["sendToS3_inicial_time"] = time
-                if event == "sentS3_success":
-                    dictLogs[jobId]["sendToS3_final_time"] = time
-
-    return dictLogs
+    
+    for linha in linhas:
+            linha = linha.split(":") 
+            del linha[0:3]                     
+            linha = ':'.join(linha)
+            #linha = ast.literal_eval(linha)
+            d = json.loads(linha)
+            if "Fingerprint" in d.keys():
+                dictFingerprint = list(d["Fingerprint"])[0]
+                dictTimeline = dictFingerprint["timeline"]
+                if not "tvufam" in dictTimeline["appId"]:
+                    continue
+                
+                if dictFingerprint["deviceId"] in dict:
+                    dict[dictFingerprint["deviceId"]] += 1
+                else:
+                    dict[dictFingerprint["deviceId"]] = 1 
+    
+    return dict
 
 
 def generateArqToTxtAll(listEncoder):
@@ -111,26 +122,31 @@ def generateArqToTxtAll(listEncoder):
 
 def main():
 
-    filenames = str(raw_input("Entre com as datas dos logs no formato : "))
-    filenames = list(filenames.split(" "))
-    dictData = {}
-
+    dictAcessDay = {}
+    dictAcessDevice = {}
+    filenames = os.listdir(pathArqs)
+    totalAccess = 0
     for filename in filenames:
-        file = os.path.join(pathArqs, filename+".log")
+        file = os.path.join(pathArqs, filename)
         arq = open(file, 'r')
-        linhas = arq.readlines()   
-        for linha in linhas:
-            linha = linha.split(":") 
-            del linha[0:3]                     
-            linha = ':'.join(linha)
-            print linha[0]
-            dictData[0] = json.loads(linha)
-            
-                #dictEncoder = fromListToList(logsList)
-                #listEncoder = sorted(dictEncoder.iteritems(), key=lambda (x, y): y['filesize'])
-                #generateArqToTxtAll(listEncoder)
+        linhas = arq.readlines()
         
+        acessMobile, acessDesktop = counterAccessByDay(linhas) 
+        dictAcessDay[filename] = acessMobile, acessDesktop
+        totalAccess+=(acessMobile + acessDesktop)
+        
+        dictAcessDevice = generateCountsDevice(linhas, dictAcessDevice) 
 
+        
+    print dictAcessDay
+    print totalAccess
+    print totalAccess/len(dictAcessDay.keys())
+    print dictAcessDevice
+    print len(dictAcessDevice.keys())
+    print totalAccess/len(dictAcessDevice.keys())
+    
+        #generateTxt() 
+    
     
 
 if __name__ == '__main__':
